@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReversiRestApi", "ReversiRestApi.csproj", "{B8D91BFF-17ED-4AC4-BEC0-9157C350A9E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReversiRestApiNUnitTest", "..\ReversiRestApiNUnitTest\ReversiRestApiNUnitTest.csproj", "{7A354121-97CE-4539-818D-74C7B9C350EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReversiRestApiNUnitTest", "..\ReversiRestAPINUnitTest\ReversiRestApiNUnitTest.csproj", "{7A354121-97CE-4539-818D-74C7B9C350EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
