@@ -6,6 +6,7 @@ using ReversiRestApi.Json_obj;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ReversiRestApi.Controllers
@@ -30,12 +31,15 @@ namespace ReversiRestApi.Controllers
         /// <returns></returns>
         //[HttpGet("Spel")] // api/Spel
         // TODO Check if this is still in use...
-        public ActionResult<IEnumerable<string>> GetSpelOmschrijvingVanSpellenMetWachtendeSpeler()
+        public async Task<ActionResult<IEnumerable<string>>> GetSpelOmschrijvingVanSpellenMetWachtendeSpeler(CancellationToken token)
         {
             List<string> descriptionList = new List<string>();
 
-            foreach (Spel spel in iRepository.GetSpellen().FindAll(spel => spel.Speler2Token == null))
-                descriptionList.Add(spel.Omschrijving);
+            foreach (Spel spel in await iRepository.GetSpellenAsync(token))
+            {
+                if (spel.Speler2Token == null)
+                    descriptionList.Add(spel.Omschrijving);
+            }
 
             return descriptionList;
         }
@@ -45,12 +49,18 @@ namespace ReversiRestApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("Spel")]
-        public ActionResult<List<SpelJsonObj>> GetGameReversiWithWaitingPlayers()
+        public async Task<ActionResult<List<SpelJsonObj>>> GetGameReversiWithWaitingPlayers(CancellationToken token)
         {
+            _logger.LogInformation("Retrieving Reversi Games");
+
             List<SpelJsonObj> result = new List<SpelJsonObj>();
 
-            foreach (Spel spel in iRepository.GetSpellen().FindAll(spel => spel.Speler2Token == null))
-                result.Add(new SpelJsonObj(spel));
+            foreach (var spel in await iRepository.GetSpellenAsync(token))
+            {
+                if (spel.Speler2Token == null)
+                    result.Add(new SpelJsonObj(spel));
+                _logger.LogInformation(spel.Omschrijving);
+            }
 
             return result;
         }
@@ -121,9 +131,9 @@ namespace ReversiRestApi.Controllers
         /// <param name="id">SpelerToken</param>
         /// <returns></returns>
         [HttpGet("SpelSpeler/{id}")]
-        public ActionResult<SpelJsonObj> RetrieveGameReversiViaSpelerToken(string id)
+        public async Task<ActionResult<SpelJsonObj>> RetrieveGameReversiViaSpelerToken(CancellationToken token, string id)
         {
-            Spel result = GetSpelFromSpelerToken(id);
+            Spel result = await GetSpelFromSpelerToken(token, id);
 
             return (result != null) ? new SpelJsonObj(result) : null;
         }
@@ -148,12 +158,12 @@ namespace ReversiRestApi.Controllers
         /// <param name="moveJsonObj"></param>
         /// <returns></returns>
         [HttpPut("Spel/Zet")]
-        public ActionResult<PutDoMoveExecutedJsonObj> PutDoMove([FromBody] MoveJsonObj moveJsonObj)
+        public async Task<ActionResult<PutDoMoveExecutedJsonObj>> PutDoMove(CancellationToken token, [FromBody] MoveJsonObj moveJsonObj)
         {
             if (moveJsonObj.SpelerToken == null && moveJsonObj.Token == null)
                 return new PutDoMoveExecutedJsonObj() { Executed = false };
 
-            Spel spel = GetSpelFromSpelerOrSpelToken(moveJsonObj.SpelerToken, moveJsonObj.Token);
+            Spel spel = await GetSpelFromSpelerOrSpelToken(token, moveJsonObj.SpelerToken, moveJsonObj.Token);
 
             if (moveJsonObj.HasPassed)
             {
@@ -176,13 +186,13 @@ namespace ReversiRestApi.Controllers
         /// <param name="giveUpJsonObj"></param>
         /// <returns></returns>
         [HttpPut("Spel/Opgeven")]
-        public ActionResult<bool> GiveUp([FromBody] GiveUpJsonObj giveUpJsonObj)
+        public async Task<ActionResult<bool>> GiveUp(CancellationToken token, [FromBody] GiveUpJsonObj giveUpJsonObj)
         {
             if (string.IsNullOrWhiteSpace(giveUpJsonObj.SpelerToken) && string.IsNullOrWhiteSpace(giveUpJsonObj.Token))
                 return false;
 
             // TODO integrate give up functionality
-            Spel spel = GetSpelFromSpelerOrSpelToken(giveUpJsonObj.SpelerToken, giveUpJsonObj.Token);
+            Spel spel = await GetSpelFromSpelerOrSpelToken(token, giveUpJsonObj.SpelerToken, giveUpJsonObj.Token);
             
             return (spel != null);
         }
@@ -193,9 +203,9 @@ namespace ReversiRestApi.Controllers
         /// <param name="spelerToken"></param>
         /// <param name="spelToken"></param>
         /// <returns></returns>
-        private Spel GetSpelFromSpelerOrSpelToken(string spelerToken, string spelToken)
+        private async Task<Spel> GetSpelFromSpelerOrSpelToken(CancellationToken token, string spelerToken, string spelToken)
         {
-           return (!string.IsNullOrWhiteSpace(spelToken)) ? iRepository.GetSpel(spelToken) : GetSpelFromSpelerToken(spelerToken);
+           return (!string.IsNullOrWhiteSpace(spelToken)) ? iRepository.GetSpel(spelToken) : await GetSpelFromSpelerToken(token, spelerToken);
         }
 
         /// <summary>
@@ -203,10 +213,10 @@ namespace ReversiRestApi.Controllers
         /// </summary>
         /// <param name="spelerToken"></param>
         /// <returns></returns>
-        private Spel GetSpelFromSpelerToken(string spelerToken)
+        private async Task<Spel> GetSpelFromSpelerToken(CancellationToken token, string spelerToken)
         {
             //iRepository.GetSpellen()
-            return iRepository.GetSpellen().Where(spel => (spel.Speler1Token != null && spel.Speler1Token.Equals(spelerToken)) || (spel.Speler2Token != null && spel.Speler2Token.Equals(spelerToken))).Select(spel => spel).FirstOrDefault();
+            return (await iRepository.GetSpellenAsync(token)).Where(spel => (spel.Speler1Token != null && spel.Speler1Token.Equals(spelerToken)) || (spel.Speler2Token != null && spel.Speler2Token.Equals(spelerToken))).Select(spel => spel).FirstOrDefault();
         }
     }
 }

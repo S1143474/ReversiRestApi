@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ReversiRestApi.DAL
@@ -108,7 +109,7 @@ namespace ReversiRestApi.DAL
         /// Retrieves all the spellen with a speler2token of NULL
         /// </summary>
         /// <returns></returns>
-        public List<Spel> GetSpellen()
+        public async Task<List<Spel>> GetSpellenAsync(CancellationToken token)
         {
             List<Spel> result = new List<Spel>();
 
@@ -117,9 +118,9 @@ namespace ReversiRestApi.DAL
                 /*string query = "SELECT * FROM Spel WHERE Speler2Token IS NULL";*/
                 string query = "SELECT * FROM Spel";
                 SqlCommand command = new SqlCommand(query, conn);
-                conn.Open();
+                await conn.OpenAsync(token);
 
-                SqlDataReader reader = command.ExecuteReader();
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken:token);
 
                 while (reader.Read())
                 {

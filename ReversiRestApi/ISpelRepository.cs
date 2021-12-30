@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ReversiRestApi
@@ -10,7 +11,7 @@ namespace ReversiRestApi
     {
         void AddSpel(Spel spel);
 
-        public List<Spel> GetSpellen();
+        public Task<List<Spel>> GetSpellenAsync(CancellationToken token);
 
         bool UpdateSpel(Spel spel);
 
