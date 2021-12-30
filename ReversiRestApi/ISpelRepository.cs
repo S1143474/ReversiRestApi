@@ -9,14 +9,14 @@ namespace ReversiRestApi
 {
     public interface ISpelRepository
     {
-        void AddSpel(Spel spel);
+        Task AddSpel(CancellationToken token, Spel spel);
 
         public Task<List<Spel>> GetSpellenAsync(CancellationToken token);
 
-        bool UpdateSpel(Spel spel);
+        Task<bool> UpdateSpel(CancellationToken token, Spel spel);
 
-        bool JoinSpel(JoinGameObj joinGameObj);
+        Task<bool> JoinSpel(CancellationToken token, JoinGameObj joinGameObj);
 
-        Spel GetSpel(string spelToken);
+        Task<Spel> GetSpel(CancellationToken token, string spelToken);
     }
 }

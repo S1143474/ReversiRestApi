@@ -36,14 +36,14 @@ namespace ReversiRestApi
         /// Adds spel to Spellen List
         /// </summary>
         /// <param name="spel"></param>
-        public void AddSpel(Spel spel) => Spellen.Add(spel);
+        public async Task AddSpel(CancellationToken token, Spel spel) => Spellen.Add(spel);
 
         /// <summary>
         /// Retrieves a Spel via a specific spelToken
         /// </summary>
         /// <param name="spelToken"></param>
         /// <returns></returns>
-        public Spel GetSpel(string spelToken)
+        public async Task<Spel> GetSpel(CancellationToken token, string spelToken)
         {
             return Spellen.Where(spel => spel.Token != null && spel.Token.Equals(spelToken)).Select(spel => spel).FirstOrDefault();
         }
@@ -57,12 +57,12 @@ namespace ReversiRestApi
             return Spellen;
         }
 
-        public bool UpdateSpel(Spel spel)
+        public Task<bool> UpdateSpel(CancellationToken token, Spel spel)
         {
             throw new NotImplementedException();
         }
 
-        public bool JoinSpel(JoinGameObj joinGameObj)
+        public Task<bool> JoinSpel(CancellationToken token, JoinGameObj joinGameObj)
         {
             throw new NotImplementedException();
         }

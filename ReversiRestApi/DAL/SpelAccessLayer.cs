@@ -17,7 +17,7 @@ namespace ReversiRestApi.DAL
         /// Adds a new spel to the database
         /// </summary>
         /// <param name="spel"></param>
-        public void AddSpel(Spel spel)
+        public async Task AddSpel(CancellationToken token, Spel spel)
         {
             using (SqlConnection conn = new SqlConnection(_CONNECTION_STRING))
             {
@@ -38,9 +38,9 @@ namespace ReversiRestApi.DAL
 
                 command.Parameters.AddRange(parameters);
 
-                conn.Open();
+                await conn.OpenAsync(token);
 
-                command.ExecuteNonQuery();
+                await command.ExecuteNonQueryAsync(token);
                 conn.Close();
             }
         }
@@ -50,7 +50,7 @@ namespace ReversiRestApi.DAL
         /// </summary>
         /// <param name="spelToken"></param>
         /// <returns></returns>
-        public Spel GetSpel(string spelToken)
+        public async Task<Spel> GetSpel(CancellationToken token, string spelToken)
         {
             Spel result = null;
 
@@ -58,11 +58,11 @@ namespace ReversiRestApi.DAL
             {
                 string query = "SELECT * FROM Spel WHERE Token = @Token";
                 SqlCommand command = new SqlCommand(query, conn);
-                conn.Open();
+                await conn.OpenAsync(token);
 
                 command.Parameters.AddWithValue("@Token", spelToken);
 
-                SqlDataReader reader = command.ExecuteReader();
+                SqlDataReader reader = await command.ExecuteReaderAsync(token);
                 
                 while(reader.Read())
                 {
@@ -85,7 +85,7 @@ namespace ReversiRestApi.DAL
         /// Updates a turn or pass etc to the database.
         /// </summary>
         /// <param name="spelToken"></param>
-        public bool UpdateSpel(Spel spel)
+        public async Task<bool> UpdateSpel(CancellationToken token, Spel spel)
         {
             using (SqlConnection conn = new SqlConnection(_CONNECTION_STRING))
             {
@@ -93,13 +93,13 @@ namespace ReversiRestApi.DAL
                 try
                 {
                     SqlCommand command = new SqlCommand(query, conn);
-                    conn.Open();
+                    await conn.OpenAsync(token);
 
                     command.Parameters.AddWithValue("@Token", spel.Token);
                     command.Parameters.AddWithValue("@Beurt", spel.AandeBeurt);
                     command.Parameters.AddWithValue("@Bord", Convert.ToBase64String(ToByteArray(FromKleurToIntArray(spel.Bord)).ToArray()));
 
-                    command.ExecuteNonQuery();
+                    await command.ExecuteNonQueryAsync(token);
                     return true;
                 } catch (Exception e) { return false; }
             }
@@ -146,7 +146,7 @@ namespace ReversiRestApi.DAL
         ///   </summary>
         /// <param name="joinGameObj"></param>
         /// <returns></returns>
-        public bool JoinSpel(JoinGameObj joinGameObj)
+        public async Task<bool> JoinSpel(CancellationToken token, JoinGameObj joinGameObj)
         {
             if (joinGameObj != null && !string.IsNullOrWhiteSpace(joinGameObj.SpelToken) && !string.IsNullOrWhiteSpace(joinGameObj.Speler2Token))
             {
@@ -157,12 +157,12 @@ namespace ReversiRestApi.DAL
                     try
                     {
                         SqlCommand command = new SqlCommand(query, conn);
-                        conn.Open();
+                        await conn.OpenAsync(token);
 
                         command.Parameters.AddWithValue("@Speler2Token", joinGameObj.Speler2Token);
                         command.Parameters.AddWithValue("@SpelToken", joinGameObj.SpelToken);
 
-                        command.ExecuteNonQuery();
+                        await command.ExecuteNonQueryAsync(token);
                         return true;
                     }
                     catch (Exception e) { return false; }
