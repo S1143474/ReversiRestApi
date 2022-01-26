@@ -200,7 +200,7 @@ namespace ReversiRestApi.Controllers
             if (string.IsNullOrWhiteSpace(giveUpJsonObj.SpelerToken) && string.IsNullOrWhiteSpace(giveUpJsonObj.Token))
                 return false;
 
-            // TODO integrate give up functionality
+            // TODO: integrate give up functionality
             Spel spel = await GetSpelFromSpelerOrSpelToken(token, giveUpJsonObj.SpelerToken, giveUpJsonObj.Token);
             
             return (spel != null);
@@ -220,7 +220,28 @@ namespace ReversiRestApi.Controllers
             return Ok(spel.Token);
         }
 
-        // TODO: Endpoint for retrieving data about finsihed result such as winner point loser points etc.
+        [HttpGet("Spel/SpelFinished/{spelToken}")]
+        public async Task<ActionResult> GetSpelFinishedResults(CancellationToken token, string spelToken)
+        {
+            if (string.IsNullOrWhiteSpace(spelToken))
+                return NotFound();
+
+            var spel = await iRepository.GetSpel(token, spelToken);
+
+            if (spel == null)
+                return NotFound();
+
+            var winner = spel.OverwegendeKleur();
+
+            // TODO: Make objects for these results. with possibilities for amount of fiches flipped etc.
+            if (winner == ISpel.Kleur.Geen)
+                return Ok("Gelijk Spel");
+
+            if (winner == ISpel.Kleur.Wit)
+                return Ok("Wit Wint");
+
+            return Ok("Zwart wint");
+        }
 
         /// <summary>
         /// Returns a Spel from spelerTOken or spelToken.
