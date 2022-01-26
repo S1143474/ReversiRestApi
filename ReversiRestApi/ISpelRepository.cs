@@ -18,5 +18,8 @@ namespace ReversiRestApi
         Task<bool> JoinSpel(CancellationToken token, JoinGameObj joinGameObj);
 
         Task<Spel> GetSpel(CancellationToken token, string spelToken);
+
+        Task<Spel> GetSpelFromSpeler1(CancellationToken token, string speler1Token);
+        Task<Spel> GetSpelFromSpeler2(CancellationToken token, string speler2Token);
     }
 }

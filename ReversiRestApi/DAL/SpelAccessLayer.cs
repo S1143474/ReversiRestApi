@@ -73,7 +73,84 @@ namespace ReversiRestApi.DAL
                         Token = reader["Token"].ToString(),
                         Speler1Token = reader["Speler1Token"].ToString(),
                         Speler2Token = HandleDbNull(reader["Speler2Token"]),
-                        Bord = FromIntToKleurArray(ToIntArray(Convert.FromBase64String(reader["Bord"].ToString())))
+                        Bord = FromIntToKleurArray(ToIntArray(Convert.FromBase64String(reader["Bord"].ToString()))),
+                        AandeBeurt = ConvertIntToKleur(Convert.ToInt32(reader["Beurt"]))
+                    };
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="speler1Token"></param>
+        /// <returns></returns>
+        public async Task<Spel> GetSpelFromSpeler1(CancellationToken token, string speler1Token)
+        {
+            Spel result = null;
+
+            using (SqlConnection conn = new SqlConnection(_CONNECTION_STRING))
+            {
+                string query = "SELECT * FROM Spel WHERE Speler1Token = @speler1Token AND EndedAt IS NULL";
+                SqlCommand command = new SqlCommand(query, conn);
+                await conn.OpenAsync(token);
+
+                command.Parameters.AddWithValue("@speler1Token", speler1Token);
+
+                SqlDataReader reader = await command.ExecuteReaderAsync(token);
+
+                while (reader.Read())
+                {
+                    result = new Spel()
+                        {
+                            ID = Convert.ToInt32(reader["GUID"]),
+                            Omschrijving = reader["Description"].ToString(),
+                            Token = reader["Token"].ToString(),
+                            Speler1Token = reader["Speler1Token"].ToString(),
+                            Speler2Token = HandleDbNull(reader["Speler2Token"]),
+                            Bord = FromIntToKleurArray(ToIntArray(Convert.FromBase64String(reader["Bord"].ToString()))),
+                            AandeBeurt = ConvertIntToKleur(Convert.ToInt32(reader["Beurt"]))
+                        };
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="speler2Token"></param>
+        /// <returns></returns>
+        public async Task<Spel> GetSpelFromSpeler2(CancellationToken token, string speler2Token)
+        {
+            Spel result = null;
+
+            using (SqlConnection conn = new SqlConnection(_CONNECTION_STRING))
+            {
+                string query = "SELECT * FROM Spel WHERE Speler2Token = @speler2Token AND EndedAt IS NULL";
+                SqlCommand command = new SqlCommand(query, conn);
+                await conn.OpenAsync(token);
+
+                command.Parameters.AddWithValue("@speler2Token", speler2Token);
+
+                SqlDataReader reader = await command.ExecuteReaderAsync(token);
+
+                while (reader.Read())
+                {
+                    result = new Spel()
+                    {
+                        ID = Convert.ToInt32(reader["GUID"]),
+                        Omschrijving = reader["Description"].ToString(),
+                        Token = reader["Token"].ToString(),
+                        Speler1Token = reader["Speler1Token"].ToString(),
+                        Speler2Token = HandleDbNull(reader["Speler2Token"]),
+                        Bord = FromIntToKleurArray(ToIntArray(Convert.FromBase64String(reader["Bord"].ToString()))),
+                        AandeBeurt = ConvertIntToKleur(Convert.ToInt32(reader["Beurt"]))
                     };
                 }
             }
@@ -131,7 +208,8 @@ namespace ReversiRestApi.DAL
                         Token = reader["Token"].ToString(),
                         Speler1Token = reader["Speler1Token"].ToString(),
                         Speler2Token = HandleDbNull(reader["Speler2Token"]),
-                        Bord = FromIntToKleurArray(ToIntArray(Convert.FromBase64String(reader["Bord"].ToString())))
+                        Bord = FromIntToKleurArray(ToIntArray(Convert.FromBase64String(reader["Bord"].ToString()))),
+                        AandeBeurt = ConvertIntToKleur(Convert.ToInt32(reader["Beurt"]))
                     };
 
                     result.Add(spel);
@@ -152,7 +230,7 @@ namespace ReversiRestApi.DAL
             {
                 using (SqlConnection conn = new SqlConnection(_CONNECTION_STRING))
                 {
-                    string query = "UPDATE Spel SET Speler2Token = @Speler2Token WHERE Token = @SpelToken";
+                    string query = "UPDATE Spel SET Speler2Token = @Speler2Token, StartedAt = @StartedAt WHERE Token = @SpelToken";
                     
                     try
                     {
@@ -160,6 +238,7 @@ namespace ReversiRestApi.DAL
                         await conn.OpenAsync(token);
 
                         command.Parameters.AddWithValue("@Speler2Token", joinGameObj.Speler2Token);
+                        command.Parameters.AddWithValue("@StartedAt", DateTime.Now.ToUniversalTime());
                         command.Parameters.AddWithValue("@SpelToken", joinGameObj.SpelToken);
 
                         await command.ExecuteNonQueryAsync(token);

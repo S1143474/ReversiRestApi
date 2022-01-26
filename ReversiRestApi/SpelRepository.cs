@@ -48,6 +48,16 @@ namespace ReversiRestApi
             return Spellen.Where(spel => spel.Token != null && spel.Token.Equals(spelToken)).Select(spel => spel).FirstOrDefault();
         }
 
+        public Task<Spel> GetSpelFromSpeler1(CancellationToken token, string speler1Token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Spel> GetSpelFromSpeler2(CancellationToken token, string speler2Token)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Returns list of all Spel objects in Spellen
         /// </summary>

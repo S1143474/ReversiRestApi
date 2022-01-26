@@ -61,11 +61,14 @@ namespace ReversiRestApi
 
         public bool DoeZet(int rijZet, int kolomZet)
         {
+
             if (ZetMogelijk(rijZet, kolomZet))
             {
                 Bord[rijZet, kolomZet] = AandeBeurt;
-                
-                FlipStonesBetween(rijZet, kolomZet);
+               
+                    FlipStonesBetween(rijZet, kolomZet);
+
+               
                 AandeBeurt = GetOpponentColor();
                 return true;
             } else 
@@ -127,7 +130,7 @@ namespace ReversiRestApi
         /// <param name="startX"></param>
         private void FlipStonesBetween(int startY, int startX)
         {
-            int currY = startY;
+            /*int currY = startY;
             int currX = startX;
 
             int diffY = (startY - _prevY) < 0 ? (startY - _prevY) * -1 : (startY - _prevY);
@@ -144,8 +147,43 @@ namespace ReversiRestApi
 
                 currY += _diffY;
                 currX += _diffX;
+            }*/
+            CellsToFlip = new List<CoordsJsonObj>();
+            
+            for (int i = startY - 1; i <= startY + 1; i++)
+            {
+                for (int j = startX - 1; j <= startX + 1; j++)
+                {
+                    if (!CheckOutOfBounds(i) || !CheckOutOfBounds(j)) continue;
+
+                    if (!CheckMovePossible(startY, startX, i, j))
+                        continue;
+                    int currY = startY;
+                    int currX = startX;
+                    int stepYDir = i - currY;
+                    int stepXDir = j - currX;
+
+                    currY += stepYDir;
+                    currX += stepXDir;
+
+                    ISpel.Kleur tempKLeur = GetOpponentColor();
+
+                    while (Bord[currY, currX] != AandeBeurt)
+                    {
+                        Bord[currY, currX] = AandeBeurt;
+                        CellsToFlip.Add(new CoordsJsonObj() { X = currX, Y = currY });
+
+                        if (CheckOutOfBounds(currY + stepYDir) && CheckOutOfBounds(currX + stepXDir))
+                        {
+                            currY += stepYDir;
+                            currX += stepXDir;
+                        }
+                    }
+                }
             }
+            CellsToFlip.Add(new CoordsJsonObj() { X = startX, Y = startY });
         }
+        
 
         /// <summary>
         /// Check move direction is possible

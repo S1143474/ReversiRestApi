@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ReversiRestApi.Json_obj;
@@ -8,10 +7,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ReversiRestApi.DataTransferModels;
+using ReversiRestApi.DataTransferModels.Spel;
+using ReversiRestApi.Filters;
 
 namespace ReversiRestApi.Controllers
 {
     [Route("api/")]
+    [ApiKeyAuth]
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
     public class SpelController : ControllerBase
@@ -158,24 +161,30 @@ namespace ReversiRestApi.Controllers
         /// <param name="moveJsonObj"></param>
         /// <returns></returns>
         [HttpPut("Spel/Zet")]
-        public async Task<ActionResult<PutDoMoveExecutedJsonObj>> PutDoMove(CancellationToken token, [FromBody] MoveJsonObj moveJsonObj)
+        public async Task<ActionResult<BaseTransferModel>> PutDoMove(CancellationToken token, [FromBody] MoveJsonObj moveJsonObj)
         {
             if (moveJsonObj.SpelerToken == null && moveJsonObj.Token == null)
-                return new PutDoMoveExecutedJsonObj() { Executed = false };
+                return new PutDoMoveExecutedJsonObj() { IsPlaceExecuted = false };
 
             Spel spel = await GetSpelFromSpelerOrSpelToken(token, moveJsonObj.SpelerToken, moveJsonObj.Token);
 
+            bool isFinished = spel.Afgelopen();
+            if (isFinished)
+                return new SpelFinishedDTO { IsSpelFinished = true, IsDraw = false, WinnerToken = spel.Speler1Token, LoserToken = spel.Speler2Token};
+
+            //TODO: check on null spel
             if (moveJsonObj.HasPassed)
             {
                 bool result = spel.Pas();
-                //iRepository.UpdateSpel(spel);
-                return new PutDoMoveExecutedJsonObj() { Executed = result };
+                await iRepository.UpdateSpel(token, spel);
+                var a = new PutDoMoveExecutedJsonObj() { IsPlaceExecuted = result, AanDeBeurt = (int)spel.AandeBeurt };
+                return a;
             }
             else
             {
                 bool result = spel.DoeZet(moveJsonObj.Y, moveJsonObj.X);
-                //iRepository.UpdateSpel(spel);
-                return new PutDoMoveExecutedJsonObj() { Executed =  result, Cells = spel.CellsToFlip };
+                await iRepository.UpdateSpel(token, spel);
+                return new PutDoMoveExecutedJsonObj() { IsPlaceExecuted =  result, FichesToTurnAround = spel.CellsToFlip, AanDeBeurt = (int)spel.AandeBeurt };
             }
         }
 
@@ -197,6 +206,22 @@ namespace ReversiRestApi.Controllers
             return (spel != null);
         }
 
+        [HttpGet("Spel/SpelToken/{spelerToken}")]
+        public async Task<ActionResult> GetSpelTokenFromSpelerToken(CancellationToken token, string spelerToken)
+        {
+            if (string.IsNullOrWhiteSpace(spelerToken))
+                return NotFound();
+
+            var spel = await GetSpelFromSpelerToken(token, spelerToken);
+
+            if (spel == null)
+                return NotFound();
+
+            return Ok(spel.Token);
+        }
+
+        // TODO: Endpoint for retrieving data about finsihed result such as winner point loser points etc.
+
         /// <summary>
         /// Returns a Spel from spelerTOken or spelToken.
         /// </summary>
@@ -215,8 +240,12 @@ namespace ReversiRestApi.Controllers
         /// <returns></returns>
         private async Task<Spel> GetSpelFromSpelerToken(CancellationToken token, string spelerToken)
         {
+            var speler1 = await iRepository.GetSpelFromSpeler1(token, spelerToken);
+            var speler2 = await iRepository.GetSpelFromSpeler2(token, spelerToken);
+
+            return speler1 ?? speler2;
             //iRepository.GetSpellen()
-            return (await iRepository.GetSpellenAsync(token)).Where(spel => (spel.Speler1Token != null && spel.Speler1Token.Equals(spelerToken)) || (spel.Speler2Token != null && spel.Speler2Token.Equals(spelerToken))).Select(spel => spel).FirstOrDefault();
+            /*return (await iRepository.GetSpellenAsync(token)).Where(spel => (spel.Speler1Token != null && spel.Speler1Token.Equals(spelerToken)) || (spel.Speler2Token != null && spel.Speler2Token.Equals(spelerToken))).Select(spel => spel).FirstOrDefault();*/
         }
     }
 }
