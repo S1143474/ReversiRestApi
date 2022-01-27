@@ -41,7 +41,7 @@ namespace ReversiRestApi.DAL
                 await conn.OpenAsync(token);
 
                 await command.ExecuteNonQueryAsync(token);
-                conn.Close();
+                await conn.CloseAsync();
             }
         }
 
@@ -77,6 +77,8 @@ namespace ReversiRestApi.DAL
                         AandeBeurt = ConvertIntToKleur(Convert.ToInt32(reader["Beurt"]))
                     };
                 }
+
+                await conn.CloseAsync();
             }
 
             return result;
@@ -115,6 +117,8 @@ namespace ReversiRestApi.DAL
                             AandeBeurt = ConvertIntToKleur(Convert.ToInt32(reader["Beurt"]))
                         };
                 }
+
+                await conn.CloseAsync();
             }
 
             return result;
@@ -153,6 +157,8 @@ namespace ReversiRestApi.DAL
                         AandeBeurt = ConvertIntToKleur(Convert.ToInt32(reader["Beurt"]))
                     };
                 }
+
+                await conn.CloseAsync();
             }
 
             return result;
@@ -177,6 +183,7 @@ namespace ReversiRestApi.DAL
                     command.Parameters.AddWithValue("@Bord", Convert.ToBase64String(ToByteArray(FromKleurToIntArray(spel.Bord)).ToArray()));
 
                     await command.ExecuteNonQueryAsync(token);
+                    await conn.CloseAsync();
                     return true;
                 } catch (Exception e) { return false; }
             }
@@ -214,6 +221,8 @@ namespace ReversiRestApi.DAL
 
                     result.Add(spel);
                 }
+
+                await conn.CloseAsync();
             }
 
             return result;
@@ -242,12 +251,52 @@ namespace ReversiRestApi.DAL
                         command.Parameters.AddWithValue("@SpelToken", joinGameObj.SpelToken);
 
                         await command.ExecuteNonQueryAsync(token);
+                        await conn.CloseAsync();
                         return true;
                     }
                     catch (Exception e) { return false; }
                 }
             }
             return false;
+        }
+
+        public async Task<Spel> SelectSpelTokenViaSpelerToken(CancellationToken token, string spelerToken)
+        {
+            if (spelerToken == null || string.IsNullOrWhiteSpace(spelerToken))
+                return null;
+
+            await using var conn = new SqlConnection(_CONNECTION_STRING);
+
+            var query =
+                "SELECT * FROM Spel Where StartedAt IS NOT NULL AND (Speler1Token = @spelerToken OR Speler2Token = @spelerToken);";
+
+            var command = new SqlCommand(query, conn);
+            command.Parameters.AddWithValue("@spelerToken", spelerToken);
+            
+            await conn.OpenAsync(token);
+            var reader = await command.ExecuteReaderAsync(token);
+
+            var result =  await reader.ReadAsync(token);
+
+            if (!result)
+                return null;
+            
+            var spel = new Spel
+            {
+                ID = Convert.ToInt32(reader["GUID"]),
+                Omschrijving = reader["Description"].ToString(),
+                Token = reader["Token"].ToString(),
+                Speler1Token = reader["Speler1Token"].ToString(),
+                Speler2Token = HandleDbNull(reader["Speler2Token"]),
+                Bord = FromIntToKleurArray(ToIntArray(Convert.FromBase64String(reader["Bord"].ToString()))),
+                AandeBeurt = ConvertIntToKleur(Convert.ToInt32(reader["Beurt"]))
+            };
+
+            await reader.DisposeAsync();
+            await command.DisposeAsync();
+            await conn.CloseAsync();
+
+            return spel;
         }
 
         /// <summary>

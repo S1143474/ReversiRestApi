@@ -58,6 +58,11 @@ namespace ReversiRestApi
             throw new NotImplementedException();
         }
 
+        public Task<Spel> SelectSpelTokenViaSpelerToken(CancellationToken token, string spelerToken)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Returns list of all Spel objects in Spellen
         /// </summary>

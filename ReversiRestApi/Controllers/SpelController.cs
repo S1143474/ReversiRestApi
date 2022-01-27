@@ -206,13 +206,13 @@ namespace ReversiRestApi.Controllers
             return (spel != null);
         }
 
-        [HttpGet("Spel/SpelToken/{spelerToken}")]
+        [HttpGet("Spel/SpelToken")]
         public async Task<ActionResult> GetSpelTokenFromSpelerToken(CancellationToken token, string spelerToken)
         {
             if (string.IsNullOrWhiteSpace(spelerToken))
                 return NotFound();
 
-            var spel = await GetSpelFromSpelerToken(token, spelerToken);
+            var spel = await iRepository.SelectSpelTokenViaSpelerToken(token, spelerToken);
 
             if (spel == null)
                 return NotFound();
