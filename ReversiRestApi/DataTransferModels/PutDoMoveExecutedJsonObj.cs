@@ -10,6 +10,7 @@ namespace ReversiRestApi.Json_obj
     {
         public int AanDeBeurt { get; set; }
         public bool IsPlaceExecuted { get; set; }
+        public string NotExecutedMessage { get; set; }
 
         public List<CoordsJsonObj> FichesToTurnAround { get; set; }
     }

@@ -23,5 +23,7 @@ namespace ReversiRestApi
         Task<Spel> GetSpelFromSpeler2(CancellationToken token, string speler2Token);
 
         Task<Spel> SelectSpelTokenViaSpelerToken(CancellationToken token, string spelerToken);
+
+        Task<bool> FinishSpel(CancellationToken token, string spelToken);
     }
 }

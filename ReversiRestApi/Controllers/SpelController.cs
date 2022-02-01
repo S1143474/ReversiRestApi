@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic;
 using ReversiRestApi.DataTransferModels;
 using ReversiRestApi.DataTransferModels.Spel;
 using ReversiRestApi.Filters;
@@ -168,23 +169,49 @@ namespace ReversiRestApi.Controllers
 
             Spel spel = await GetSpelFromSpelerOrSpelToken(token, moveJsonObj.SpelerToken, moveJsonObj.Token);
 
+            if (spel.AandeBeurt == ISpel.Kleur.Wit && spel.Speler1Token != moveJsonObj.SpelerToken || spel.AandeBeurt == ISpel.Kleur.Zwart && spel.Speler2Token != moveJsonObj.SpelerToken)
+            {
+                return new PutDoMoveExecutedJsonObj()
+                {
+                    NotExecutedMessage = "Je bent nog niet aan de beurt.",
+                    IsPlaceExecuted = false,
+                    AanDeBeurt = (int)spel.AandeBeurt
+                };
+            }
+
             bool isFinished = spel.Afgelopen();
             if (isFinished)
-                return new SpelFinishedDTO { IsSpelFinished = true, IsDraw = false, WinnerToken = spel.Speler1Token, LoserToken = spel.Speler2Token};
+                return new SpelFinishedDTO
+                {
+                    IsSpelFinished = true, 
+                    IsDraw = false, 
+                    WinnerToken = spel.Speler1Token, 
+                    LoserToken = spel.Speler2Token
+                };
 
             //TODO: check on null spel
             if (moveJsonObj.HasPassed)
             {
                 bool result = spel.Pas();
                 await iRepository.UpdateSpel(token, spel);
-                var a = new PutDoMoveExecutedJsonObj() { IsPlaceExecuted = result, AanDeBeurt = (int)spel.AandeBeurt };
+                var a = new PutDoMoveExecutedJsonObj()
+                {
+                    IsPlaceExecuted = result, 
+                    AanDeBeurt = (int)spel.AandeBeurt
+                };
                 return a;
             }
             else
             {
                 bool result = spel.DoeZet(moveJsonObj.Y, moveJsonObj.X);
                 await iRepository.UpdateSpel(token, spel);
-                return new PutDoMoveExecutedJsonObj() { IsPlaceExecuted =  result, FichesToTurnAround = spel.CellsToFlip, AanDeBeurt = (int)spel.AandeBeurt };
+                return new PutDoMoveExecutedJsonObj()
+                {
+                    NotExecutedMessage = (result) ? null : "Verkeerde zet, probeer het nog eens.",
+                    IsPlaceExecuted =  result, 
+                    FichesToTurnAround = spel.CellsToFlip, 
+                    AanDeBeurt = (int)spel.AandeBeurt
+                };
             }
         }
 
@@ -220,7 +247,7 @@ namespace ReversiRestApi.Controllers
             return Ok(spel.Token);
         }
 
-        [HttpGet("Spel/SpelFinished/{spelToken}")]
+        [HttpGet("Spel/SpelFinished")]
         public async Task<ActionResult> GetSpelFinishedResults(CancellationToken token, string spelToken)
         {
             if (string.IsNullOrWhiteSpace(spelToken))
@@ -232,15 +259,32 @@ namespace ReversiRestApi.Controllers
                 return NotFound();
 
             var winner = spel.OverwegendeKleur();
+            var flippedFiches = spel.GedraaideFiches();
+
+            var result = new SpelResultsDTO
+            {
+                IsSpelFinished = true,
+                IsDraw = false,
+                WinnerToken = spel.Speler2Token,
+                LoserToken = spel.Speler1Token,
+                AmountOfGeenFichesTurned = flippedFiches[(int)ISpel.Kleur.Geen],
+                AmountOfWitFichesTurned = flippedFiches[(int)ISpel.Kleur.Wit],
+                AmountOfZwartFichesTurned = flippedFiches[(int)ISpel.Kleur.Zwart]
+            };
+
+            var updatedSpel = await iRepository.FinishSpel(token, spelToken);
 
             // TODO: Make objects for these results. with possibilities for amount of fiches flipped etc.
             if (winner == ISpel.Kleur.Geen)
-                return Ok("Gelijk Spel");
+                result.IsDraw = true;
 
             if (winner == ISpel.Kleur.Wit)
-                return Ok("Wit Wint");
+            {
+                result.WinnerToken = spel.Speler1Token;
+                result.LoserToken = spel.Speler2Token;
+            }
 
-            return Ok("Zwart wint");
+            return Ok(result);
         }
 
         /// <summary>

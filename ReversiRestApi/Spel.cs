@@ -88,6 +88,16 @@ namespace ReversiRestApi
             return (zwartCount == witCount) ? Geen : (zwartCount > witCount) ? Zwart : Wit;
         }
 
+        public int[] GedraaideFiches()
+        {
+            var result = new int[3];
+
+            foreach (var color in Bord)
+                result[(int)color]++;
+
+            return result;
+        }
+
         public bool Pas()
         {
             AandeBeurt = GetOpponentColor();
@@ -113,7 +123,7 @@ namespace ReversiRestApi
                                     continue;
                                 else if (Bord[i, j] == GetOpponentColor())
                                     if (CheckMovePossible(rijZet, kolomZet, i, j))
-                                        return true;
+                                        return Bord[rijZet, kolomZet] == Geen;
                             }
                         }
                     }

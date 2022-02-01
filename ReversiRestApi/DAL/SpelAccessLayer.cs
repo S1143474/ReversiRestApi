@@ -299,6 +299,54 @@ namespace ReversiRestApi.DAL
             return spel;
         }
 
+        public async Task<bool> FinishSpel(CancellationToken token, string spelToken)
+        {
+            if (spelToken is null || string.IsNullOrWhiteSpace(spelToken))
+                return false;
+
+            try
+            {
+                await using var conn = new SqlConnection(_CONNECTION_STRING);
+
+                var query = "UPDATE Spel SET EndedAt = @EndedAt WHERE Token = @SpelToken";
+
+                await using var command = new SqlCommand(query, conn);
+
+                await conn.OpenAsync(token);
+
+                command.Parameters.AddWithValue("@EndedAt", DateTime.Now.ToUniversalTime());
+                command.Parameters.AddWithValue("@SpelToken", spelToken);
+
+                await command.ExecuteNonQueryAsync(token);
+                await command.DisposeAsync();
+                await conn.CloseAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return true;
+            /*using (SqlConnection conn = new SqlConnection(_CONNECTION_STRING))
+            {
+                string query = "UPDATE Spel SET Bord = @Bord, Beurt = @Beurt WHERE Token = @Token";
+                try
+                {
+                    SqlCommand command = new SqlCommand(query, conn);
+                    await conn.OpenAsync(token);
+
+                    command.Parameters.AddWithValue("@Token", spel.Token);
+                    command.Parameters.AddWithValue("@Beurt", spel.AandeBeurt);
+                    command.Parameters.AddWithValue("@Bord", Convert.ToBase64String(ToByteArray(FromKleurToIntArray(spel.Bord)).ToArray()));
+
+                    await command.ExecuteNonQueryAsync(token);
+                    await conn.CloseAsync();
+                    return true;
+                }
+                catch (Exception e) { return false; }
+            }*/
+        }
+
         /// <summary>
         /// Converts object from null to DBNull.Value
         /// </summary>
