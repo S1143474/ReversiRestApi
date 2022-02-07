@@ -268,7 +268,7 @@ namespace ReversiRestApi.DAL
             await using var conn = new SqlConnection(_CONNECTION_STRING);
 
             var query =
-                "SELECT * FROM Spel Where StartedAt IS NOT NULL AND (Speler1Token = @spelerToken OR Speler2Token = @spelerToken);";
+                "SELECT * FROM Spel Where StartedAt IS NOT NULL AND (Speler1Token = @spelerToken OR Speler2Token = @spelerToken) ORDER BY EndedAt DESC;";
 
             var command = new SqlCommand(query, conn);
             command.Parameters.AddWithValue("@spelerToken", spelerToken);
@@ -323,7 +323,7 @@ namespace ReversiRestApi.DAL
             }
             catch (Exception ex)
             {
-
+                
             }
 
             return true;
