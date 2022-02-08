@@ -3,6 +3,8 @@ using ReversiRestApi;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ReversiRestApiNUnitTest
 {
@@ -19,27 +21,31 @@ namespace ReversiRestApiNUnitTest
         }
 
         [Test]
-        public void SpelRepository_AddSpell_SpellAddedToSpellenList()
+        public async Task SpelRepository_AddSpell_SpellAddedToSpellenList()
         {
+            // Arrange
+            _spelRepository.AddSpel(CancellationToken.None, new Spel());
+
             // Act
-            _spelRepository.AddSpel(new Spel());
+            List<Spel> result = await _spelRepository.GetSpellenAsync(CancellationToken.None);
+
 
             // Assert
-            Assert.AreEqual(_spelRepository.GetSpellen().Count, 1);
+            Assert.AreEqual(result.Count, 1);
         }
 
         #region GetSpellen()
 
         [Test]
-        public void SpelRepository_GetSpellen_ReturnsListOfSpellen()
+        public async Task SpelRepository_GetSpellen_ReturnsListOfSpellen()
         {
             // Arrange
-            _spelRepository.AddSpel(new Spel());
-            _spelRepository.AddSpel(new Spel());
-            _spelRepository.AddSpel(new Spel());
+            _spelRepository.AddSpel(CancellationToken.None, new Spel());
+            _spelRepository.AddSpel(CancellationToken.None, new Spel());
+            _spelRepository.AddSpel(CancellationToken.None, new Spel());
 
             // Act
-            List<Spel> result = _spelRepository.GetSpellen();
+            List<Spel> result = await _spelRepository.GetSpellenAsync(CancellationToken.None);
 
             // Assert
             Assert.AreNotEqual(result.Count, 0);
@@ -47,10 +53,10 @@ namespace ReversiRestApiNUnitTest
         }
 
         [Test]
-        public void SpelRepository_GetSpellenEmptyList_ReturnEmptyList()
+        public async Task SpelRepository_GetSpellenEmptyList_ReturnEmptyList()
         {
             // Act
-            List<Spel> result = _spelRepository.GetSpellen();
+            List<Spel> result = await _spelRepository.GetSpellenAsync(CancellationToken.None);
 
             // Assert
             Assert.AreEqual(0, result.Count);
@@ -59,14 +65,14 @@ namespace ReversiRestApiNUnitTest
 
         #region GetSpel()
         [Test]
-        public void SpelRepository_GetSpelFromToken_ReturnSpel()
+        public async Task SpelRepository_GetSpelFromToken_ReturnSpel()
         {
             // Arrange
             Spel spel = new Spel() { Token = "abcdefg" };
-            _spelRepository.AddSpel(spel);
+            _spelRepository.AddSpel(CancellationToken.None, spel);
 
             // Act
-            Spel result = _spelRepository.GetSpel("abcdefg");
+            Spel result = await _spelRepository.GetSpel(CancellationToken.None, "abcdefg");
 
             // Assert
             Assert.AreEqual(spel, result);
@@ -74,14 +80,14 @@ namespace ReversiRestApiNUnitTest
         }
 
         [Test]
-        public void SpelRepository_GetSpelFromWrongToken_ReturnNull()
+        public async Task SpelRepository_GetSpelFromWrongToken_ReturnNull()
         {
             // Arrange
             Spel spel = new Spel() { Token = "abcdefg" };
-            _spelRepository.AddSpel(spel);
+            _spelRepository.AddSpel(CancellationToken.None, spel);
 
             // Act
-            Spel result = _spelRepository.GetSpel("hijklm");
+            Spel result = await _spelRepository.GetSpel(CancellationToken.None, "hijklm");
 
             // Assert
             Assert.AreNotEqual(spel, result);
@@ -89,14 +95,14 @@ namespace ReversiRestApiNUnitTest
         }
 
         [Test]
-        public void SpelRepository_GetSpelWithEmptyToken_ReturnNull()
+        public async Task SpelRepository_GetSpelWithEmptyToken_ReturnNull()
         {
             // Arrange
             Spel spel = new Spel() { Token = "abcdefg" };
-            _spelRepository.AddSpel(spel);
+            _spelRepository.AddSpel(CancellationToken.None, spel);
 
             // Act
-            Spel result = _spelRepository.GetSpel("");
+            Spel result = await _spelRepository.GetSpel(CancellationToken.None, "");
 
             // Assert
             Assert.AreEqual(null, result);
@@ -104,14 +110,14 @@ namespace ReversiRestApiNUnitTest
         }
 
         [Test]
-        public void SpelRepository_GetSpelWithNull_ReturnNull()
+        public async Task SpelRepository_GetSpelWithNull_ReturnNull()
         {
             // Arrange
             Spel spel = new Spel() { Token = "abcdefg" };
-            _spelRepository.AddSpel(spel);
+            _spelRepository.AddSpel(CancellationToken.None, spel);
 
             // Act
-            Spel result = _spelRepository.GetSpel(null);
+            Spel result = await _spelRepository.GetSpel(CancellationToken.None, null);
 
             // Assert
             Assert.AreEqual(null, result);

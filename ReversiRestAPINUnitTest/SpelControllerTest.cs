@@ -7,7 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace ReversiRestApiNUnitTest
 {
@@ -20,15 +23,16 @@ namespace ReversiRestApiNUnitTest
         [SetUp]
         public void SetUp()
         {
+            var logger = Mock.Of<ILogger<SpelController>>();
             _spelRepository = new SpelRepository();
-            _spelController = new SpelController(_spelRepository, null);
+            _spelController = new SpelController(_spelRepository, logger: logger);
         }
 
         [Test]
         public void SpelController_GetSpelOmschrijvingVanSpellenMetWachtendeSpeler_ReturnsListOfGameDescriptions()
         {
             // Act
-            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler().Value.ToList();
+            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler(CancellationToken.None).Result.Value.ToList();
             // Assert
             Assert.AreEqual(2, result.Count);
         }
@@ -37,7 +41,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_GetGameReversiWithWaitingPlayers_ReturnSpelList()
         {
             // Act
-            List<SpelJsonObj> result = _spelController.GetGameReversiWithWaitingPlayers().Value;
+            List<SpelJsonObj> result = _spelController.GetGameReversiWithWaitingPlayers(CancellationToken.None).Result.Value;
 
             // Assert
             Assert.IsNotNull(result);
@@ -49,8 +53,8 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_PlaceNewGameReversiWithTokenAndDescription_AddsNewGameToList()
         {
             // Act
-            _spelController.PlaceNewGameReversi(new PlaceGameJsonObj() { PlayerToken = "abcdef", Description = "description test" });
-            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler().Value.ToList();
+            _spelController.PlaceNewGameReversi(CancellationToken.None, new PlaceGameJsonObj() { PlayerToken = "abcdef", Description = "description test" });
+            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler(CancellationToken.None).Result.Value.ToList();
 
             // Assert
             Assert.AreEqual(3, result.Count);
@@ -60,8 +64,8 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_PlaceNewGameReversiWithoutTokenAndWithDescription_AddsNewGameToList()
         {
             // Act
-            _spelController.PlaceNewGameReversi(new PlaceGameJsonObj() { PlayerToken = null, Description = "description test" });
-            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler().Value.ToList();
+            _spelController.PlaceNewGameReversi(CancellationToken.None, new PlaceGameJsonObj() { PlayerToken = null, Description = "description test" });
+            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler(CancellationToken.None).Result.Value.ToList();
 
             // Assert
             Assert.AreEqual(2, result.Count);
@@ -71,8 +75,8 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_PlaceNewGameReversiWithTokenAndWithoutDescription_AddsNewGameToList()
         {
             // Act
-            _spelController.PlaceNewGameReversi(new PlaceGameJsonObj() { PlayerToken = "abcdef", Description = null });
-            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler().Value.ToList();
+            _spelController.PlaceNewGameReversi(CancellationToken.None, new PlaceGameJsonObj() { PlayerToken = "abcdef", Description = null });
+            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler(CancellationToken.None).Result.Value.ToList();
 
             // Assert
             Assert.AreEqual(2, result.Count);
@@ -82,8 +86,8 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_PlaceNewGameReversiWithEmptyTokenAndWithDescription_AddsNewGameToList()
         {
             // Act
-            _spelController.PlaceNewGameReversi(new PlaceGameJsonObj() { PlayerToken = "", Description = "Test Description" });
-            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler().Value.ToList();
+            _spelController.PlaceNewGameReversi(CancellationToken.None, new PlaceGameJsonObj() { PlayerToken = "", Description = "Test Description" });
+            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler(CancellationToken.None).Result.Value.ToList();
 
             // Assert
             Assert.AreEqual(2, result.Count);
@@ -93,8 +97,8 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_PlaceNewGameReversiWithTokenAndWithEmptyDescription_AddsNewGameToList()
         {
             // Act
-            _spelController.PlaceNewGameReversi(new PlaceGameJsonObj() { PlayerToken = "abcdef", Description = "" });
-            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler().Value.ToList();
+            _spelController.PlaceNewGameReversi(CancellationToken.None, new PlaceGameJsonObj() { PlayerToken = "abcdef", Description = "" });
+            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler(CancellationToken.None).Result.Value.ToList();
 
             // Assert
             Assert.AreEqual(2, result.Count);
@@ -104,8 +108,8 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_PlaceNewGameReversiWithWhiteSpaceTokenAndWithDescription_AddsNewGameToList()
         {
             // Act
-            _spelController.PlaceNewGameReversi(new PlaceGameJsonObj() { PlayerToken = " ", Description = "Test Description" });
-            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler().Value.ToList();
+            _spelController.PlaceNewGameReversi(CancellationToken.None, new PlaceGameJsonObj() { PlayerToken = " ", Description = "Test Description" });
+            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler(CancellationToken.None).Result.Value.ToList();
 
             // Assert
             Assert.AreEqual(2, result.Count);
@@ -115,8 +119,8 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_PlaceNewGameReversiWithTokenAndWithWhiteSpaceDescription_AddsNewGameToList()
         {
             // Act
-            _spelController.PlaceNewGameReversi(new PlaceGameJsonObj() { PlayerToken = "abcdef", Description = " " });
-            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler().Value.ToList();
+            _spelController.PlaceNewGameReversi(CancellationToken.None, new PlaceGameJsonObj() { PlayerToken = "abcdef", Description = " " });
+            List<string> result = _spelController.GetSpelOmschrijvingVanSpellenMetWachtendeSpeler(CancellationToken.None).Result.Value.ToList();
 
             // Assert
             Assert.AreEqual(2, result.Count);
@@ -128,7 +132,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_RetrieveGameReversiWithToken_ReturnSpelWithSameToken()
         {
             // Act
-            SpelJsonObj result = _spelController.RetrieveGameReversi("abcdef").Value;
+            SpelJsonObj result = _spelController.RetrieveGameReversi(CancellationToken.None, "abcdef").Result.Value;
 
             // Assert
             Assert.IsNotNull(result.Token);
@@ -139,7 +143,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_RetrieveGameReversiWithoutToken_ReturnNull()
         {
             // Act
-            SpelJsonObj result = _spelController.RetrieveGameReversi(null).Value;
+            SpelJsonObj result = _spelController.RetrieveGameReversi(CancellationToken.None, null).Result.Value;
 
             // Assert
             Assert.IsNull(result);
@@ -149,7 +153,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_RetrieveGameReversiWithEmptyToken_ReturnNull()
         {
             // Act
-            SpelJsonObj result = _spelController.RetrieveGameReversi("").Value;
+            SpelJsonObj result = _spelController.RetrieveGameReversi(CancellationToken.None, "").Result.Value;
 
             // Assert
             Assert.IsNull(result);
@@ -159,7 +163,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_RetrieveGameReversiWithWrongToken_ReturnNull()
         {
             // Act
-            SpelJsonObj result = _spelController.RetrieveGameReversi("WrongToken").Value;
+            SpelJsonObj result = _spelController.RetrieveGameReversi(CancellationToken.None, "WrongToken").Result.Value;
 
             // Assert
             Assert.IsNull(result);
@@ -171,7 +175,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_RetrieveGameReversiWithSpeler1Token_ReturnSpel()
         {
             // Act
-            SpelJsonObj result = _spelController.RetrieveGameReversiViaSpelerToken("ghijkl").Value;
+            SpelJsonObj result = _spelController.RetrieveGameReversiViaSpelerToken(CancellationToken.None, "ghijkl").Result.Value;
 
             // Assert
             Assert.IsNotNull(result);
@@ -182,7 +186,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_RetrieveGameReversiWithSpeler2Token_ReturnSpel()
         {
             // Act
-            SpelJsonObj result = _spelController.RetrieveGameReversiViaSpelerToken("mnoqpr").Value;
+            SpelJsonObj result = _spelController.RetrieveGameReversiViaSpelerToken(CancellationToken.None, "mnoqpr").Result.Value;
 
             // Assert
             Assert.IsNotNull(result);
@@ -193,8 +197,8 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_CheckIfTheSameGameReturnsWithSpeler1AndSpeler2Token_ReturnSpell()
         {
             // Act
-            SpelJsonObj speler1Result = _spelController.RetrieveGameReversiViaSpelerToken("ghijkl").Value;
-            SpelJsonObj speler2Result = _spelController.RetrieveGameReversiViaSpelerToken("mnoqpr").Value;
+            SpelJsonObj speler1Result = _spelController.RetrieveGameReversiViaSpelerToken(CancellationToken.None, "ghijkl").Result.Value;
+            SpelJsonObj speler2Result = _spelController.RetrieveGameReversiViaSpelerToken(CancellationToken.None,"mnoqpr").Result.Value;
 
             // Assert
             Assert.IsNotNull(speler1Result);
@@ -207,7 +211,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_RetrieveGameReversiWithNoneExistingSpelerToken_ReturnNull()
         {
             // Act
-            SpelJsonObj result = _spelController.RetrieveGameReversiViaSpelerToken("WrongToken").Value;
+            SpelJsonObj result = _spelController.RetrieveGameReversiViaSpelerToken(CancellationToken.None, "WrongToken").Result.Value;
 
             // Assert
             Assert.IsNull(result);
@@ -217,7 +221,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_RetrieveGameReversiWithEmptySpelerToken_ReturnNull()
         {
             // Act
-            SpelJsonObj result = _spelController.RetrieveGameReversiViaSpelerToken("").Value;
+            SpelJsonObj result = _spelController.RetrieveGameReversiViaSpelerToken(CancellationToken.None, "").Result.Value;
 
             // Assert
             Assert.IsNull(result);
@@ -227,7 +231,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_RetrieveGameReversiWithSpelerTokenNull_ReturnNull()
         {
             // Act
-            SpelJsonObj result = _spelController.RetrieveGameReversiViaSpelerToken(null).Value;
+            SpelJsonObj result = _spelController.RetrieveGameReversiViaSpelerToken(CancellationToken.None, null).Result.Value;
 
             // Assert
             Assert.IsNull(result);
@@ -250,10 +254,10 @@ namespace ReversiRestApiNUnitTest
             };
 
             // Act
-            var result = _spelController.PutDoMove(moveJsonObj).Value;
+            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value;
 
             // Assert
-            Assert.IsTrue(result.Executed);
+            Assert.IsTrue(result.IsPlaceExecuted);
         }
 
         [Test]
@@ -270,10 +274,10 @@ namespace ReversiRestApiNUnitTest
             };
 
             // Act
-            var result = _spelController.PutDoMove(moveJsonObj).Value;
+            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value;
 
             // Assert
-            Assert.IsTrue(result.Executed);
+            Assert.IsTrue(result.IsPlaceExecuted);
         }
 
         [Test]
@@ -290,10 +294,10 @@ namespace ReversiRestApiNUnitTest
             };
 
             // Act
-            var result = _spelController.PutDoMove(moveJsonObj).Value;
+            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value;
 
             // Assert
-            Assert.IsFalse(result.Executed);
+            Assert.IsFalse(result.IsPlaceExecuted);
         }
 
         [Test]
@@ -310,10 +314,10 @@ namespace ReversiRestApiNUnitTest
             };
 
             // Act
-            var result = _spelController.PutDoMove(moveJsonObj).Value;
+            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value;
 
             // Assert
-            Assert.IsFalse(result.Executed);
+            Assert.IsFalse(result.IsPlaceExecuted);
         }
 
         [Test]
@@ -330,10 +334,10 @@ namespace ReversiRestApiNUnitTest
             };
 
             // Act
-            var result = _spelController.PutDoMove(moveJsonObj).Value;
+            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value;
 
             // Assert
-            Assert.IsTrue(result.Executed);
+            Assert.IsTrue(result.IsPlaceExecuted);
         }
 
         #endregion
@@ -343,7 +347,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_GetNextPlayerTurnNotStarted_ReturnZero()
         {
             // Act
-            var result = _spelController.GetNextPlayerTurn("abcdef").Value;
+            var result = _spelController.GetNextPlayerTurn(CancellationToken.None, "abcdef").Result.Value;
 
             // Assert
             Assert.AreNotEqual(-1, result.Beurt);
@@ -354,7 +358,7 @@ namespace ReversiRestApiNUnitTest
         public void SpelController_GetNextPlayerTurnGameNotExisting_ReturnNegativeOne()
         {
             // Act
-            var result = _spelController.GetNextPlayerTurn("WrongToken").Value;
+            var result = _spelController.GetNextPlayerTurn(CancellationToken.None, "WrongToken").Result.Value;
 
             // Assert
             Assert.AreEqual(-1, result.Beurt);
@@ -371,7 +375,7 @@ namespace ReversiRestApiNUnitTest
             GiveUpJsonObj giveUpJsonObj = new GiveUpJsonObj() { Token = "", SpelerToken = "abcdef" };
 
             // Act
-            bool result = _spelController.GiveUp(giveUpJsonObj).Value;
+            bool result = _spelController.GiveUp(CancellationToken.None, giveUpJsonObj).Result.Value;
 
             // Assert
             Assert.IsTrue(result);
@@ -384,7 +388,7 @@ namespace ReversiRestApiNUnitTest
             GiveUpJsonObj giveUpJsonObj = new GiveUpJsonObj() { Token = "abcdef", SpelerToken = "" };
 
             // Act
-            bool result = _spelController.GiveUp(giveUpJsonObj).Value;
+            bool result = _spelController.GiveUp(CancellationToken.None, giveUpJsonObj).Result.Value;
 
             // Assert
             Assert.IsTrue(result);
@@ -397,7 +401,7 @@ namespace ReversiRestApiNUnitTest
             GiveUpJsonObj giveUpJsonObj = new GiveUpJsonObj() { Token = "", SpelerToken = "" };
 
             // Act
-            bool result = _spelController.GiveUp(giveUpJsonObj).Value;
+            bool result = _spelController.GiveUp(CancellationToken.None, giveUpJsonObj).Result.Value;
 
             // Assert
             Assert.IsFalse(result);
@@ -410,7 +414,7 @@ namespace ReversiRestApiNUnitTest
             GiveUpJsonObj giveUpJsonObj = new GiveUpJsonObj() { Token = "1234asdf", SpelerToken = "" };
 
             // Act
-            bool result = _spelController.GiveUp(giveUpJsonObj).Value;
+            bool result = _spelController.GiveUp(CancellationToken.None, giveUpJsonObj).Result.Value;
 
             // Assert
             Assert.IsFalse(result);
@@ -422,7 +426,7 @@ namespace ReversiRestApiNUnitTest
             GiveUpJsonObj giveUpJsonObj = new GiveUpJsonObj() { Token = "", SpelerToken = "asdf1234" };
 
             // Act
-            bool result = _spelController.GiveUp(giveUpJsonObj).Value;
+            bool result = _spelController.GiveUp(CancellationToken.None, giveUpJsonObj).Result.Value;
 
             // Assert
             Assert.IsFalse(result);
