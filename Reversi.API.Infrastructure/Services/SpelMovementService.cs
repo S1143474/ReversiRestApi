@@ -1,8 +1,9 @@
-﻿using Reversi.API.Application.Common;
+﻿/*using Reversi.API.Application.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Reversi.API.Application.Common.Interfaces;
+using Reversi.API.Application.Spellen.DTO;
 using Reversi.API.Domain.Entities;
 using Reversi.API.Domain.Enums;
 using Reversi.API.Infrastructure.Maps;
@@ -29,20 +30,22 @@ namespace Reversi.API.Infrastructure.Services
 
             return true;
         }
-        public bool DoeZet(Spel spel, int rijZet, int kolomZet)
+        public bool DoeZet(Spel spel, int rijZet, int kolomZet, out List<CoordsDTO> flippedResult)
         {
             if (ZetMogelijk(spel, rijZet, kolomZet))
             {
                 spel.Bord[rijZet, kolomZet] = spel.AandeBeurt;
 
-                FlipStonesBetween(spel, rijZet, kolomZet);
-
+                flippedResult = FlipStonesBetween(spel, rijZet, kolomZet);
 
                 spel.AandeBeurt = GetOpponentColor(spel);
                 return true;
             }
             else
+            {
+                flippedResult = null;
                 return false;
+            }
         }
 
         public Kleur OverwegendeKleur(Kleur[,] bord)
@@ -103,9 +106,9 @@ namespace Reversi.API.Infrastructure.Services
             return false;
         }
 
-        public IEnumerable<IFiche> FlipStonesBetween(Spel spel, int startY, int startX)
+        public List<CoordsDTO> FlipStonesBetween(Spel spel, int startY, int startX)
         {
-            var cellsToFlip = new List<FicheSeriesMap>();
+            var cellsToFlip = new List<CoordsDTO>();
 
             for (int i = startY - 1; i <= startY + 1; i++)
             {
@@ -128,7 +131,7 @@ namespace Reversi.API.Infrastructure.Services
                     while (spel.Bord[currY, currX] != spel.AandeBeurt)
                     {
                         spel.Bord[currY, currX] = spel.AandeBeurt;
-                        cellsToFlip.Add(new FicheSeriesMap() { X = currX, Y = currY });
+                        cellsToFlip.Add(new CoordsDTO() { X = currX, Y = currY });
 
                         if (CheckOutOfBounds(currY + stepYDir) && CheckOutOfBounds(currX + stepXDir))
                         {
@@ -138,7 +141,7 @@ namespace Reversi.API.Infrastructure.Services
                     }
                 }
             }
-            cellsToFlip.Add(new FicheSeriesMap() { X = startX, Y = startY });
+            cellsToFlip.Add(new CoordsDTO { X = startX, Y = startY });
             return cellsToFlip;
         }
 
@@ -150,9 +153,9 @@ namespace Reversi.API.Infrastructure.Services
             var currY = y;
             var currX = x;
 
-/*            var _prevY = 0;
+*//*            var _prevY = 0;
             var _prevX = 0;
-*/
+*//*
             for (int i = 0; i < _BORD_SIZE; i++)
             {
                 if (CheckOutOfBounds(currY) && CheckOutOfBounds(currX))
@@ -162,8 +165,8 @@ namespace Reversi.API.Infrastructure.Services
 
                     if (spel.Bord[currY, currX] == spel.AandeBeurt)
                     {
-/*                        _prevY = currY;
-                        _prevX = currX;*/
+*//*                        _prevY = currY;
+                        _prevX = currX;*//*
                         return true;
                     }
 
@@ -182,3 +185,4 @@ namespace Reversi.API.Infrastructure.Services
 
     }
 }
+*/

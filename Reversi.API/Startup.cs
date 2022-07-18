@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+/*using Microsoft.Extensions.Logging;*/
 using Reversi.API.Application;
 using Reversi.API.Infrastructure;
 
@@ -25,9 +27,10 @@ namespace Reversi.API
         {
             services
                 .AddControllers();
-
+            
             services.AddApplication();
             services.AddInfrastructure(Configuration);
+            services.AddAutoMapper(typeof(Startup));
 
             /*services.AddSingleton<ISpelRepository, SpelAccessLayer>();*/
 
@@ -55,16 +58,20 @@ namespace Reversi.API
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            app.UseMiddleware<ExceptionMiddleware.ExceptionMiddleware>();
 
+            app.UseHttpsRedirection();
+                
             app.UseRouting();
+
+            app.UseAuthorization();
 
             app.UseCors(options =>
                 options.WithOrigins("https://localhost:44309", "http://localhost:3000")
@@ -72,12 +79,13 @@ namespace Reversi.API
                     .WithHeaders("content-type")
             );
 
-            app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
+            // TODO: mayby change the way this is setup.
+            loggerFactory.AddFile("Logs/reversi-rest-api-{Date}.txt");
         }
     }
 }

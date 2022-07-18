@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using Reversi.API.Application.Common.Interfaces;
-using Reversi.API.Domain.Entities;
+/*using Reversi.API.Application.Spellen.DTO;
+*/using Reversi.API.Domain.Entities;
 using Reversi.API.Domain.Enums;
 
 namespace Reversi.API.Application.Common
@@ -11,7 +12,7 @@ namespace Reversi.API.Application.Common
     {
         bool Afgelopen(Spel spel);
 
-        bool DoeZet(Spel spel, int rijZet, int kolomZet);
+       /* bool DoeZet(Spel spel, int rijZet, int kolomZet, out List<CoordsDTO> flippedResult);*/
 
         Kleur OverwegendeKleur(Kleur[,] bord);
 
@@ -23,7 +24,7 @@ namespace Reversi.API.Application.Common
 
         // Methods below used to be private.
 
-        IEnumerable<IFiche> FlipStonesBetween(Spel spel, int startY, int startX); // TODO: Something with CellsToFlip List
+       /* List<CoordsDTO> FlipStonesBetween(Spel spel, int startY, int startX); // TODO: Something with CellsToFlip List*/
 
         bool CheckMovePossible(Spel spel, int rijZet, int kolomZet, int y, int x);
 

@@ -4,6 +4,8 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Reversi.API.Application;
+using Reversi.API.Application.Common.Interfaces;
 
 namespace Reversi.API.Infrastructure.Persistence.SQLCommands
 {
@@ -23,10 +25,9 @@ namespace Reversi.API.Infrastructure.Persistence.SQLCommands
             return this;
         }
 
-        public override async Task<List<Dictionary<string, object>>> Execute()
+        public override async Task<T> Execute<T, U>()
         /*public override async Task<List<TItem>> Execute<TItem>()*/
-
-        {
+        {   
             await Connection.OpenAsync();
 
             Reader = await Command.ExecuteReaderAsync();
@@ -37,14 +38,25 @@ namespace Reversi.API.Infrastructure.Persistence.SQLCommands
                 var item = Enumerable.Range(0, Reader.FieldCount)
                     .ToDictionary(Reader.GetName, Reader.GetValue);
 
+                var keys = new List<string>(item.Keys);
+
+                foreach (var key in keys.Where(key => item[key].Equals(DBNull.Value)))
+                {
+                    item[key] = null;
+                }
+               
+
                 result.Add(item);
             }
+
+            T t = Activator.CreateInstance<T>();
+            t.Add(result);
 
             await Reader.CloseAsync();
             await Command.DisposeAsync();
             await Connection.CloseAsync();
 
-            return result;
+            return t;
         }
     }
 }
