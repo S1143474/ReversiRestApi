@@ -7,13 +7,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReversiRestApi", "ReversiRe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReversiRestApiNUnitTest", "..\ReversiRestAPINUnitTest\ReversiRestApiNUnitTest.csproj", "{7A354121-97CE-4539-818D-74C7B9C350EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reversi.API.Domain", "..\Reversi.API.Domain\Reversi.API.Domain.csproj", "{FB34C344-1AC0-4069-B6D0-64A1C9B3872F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reversi.API.Domain", "..\Reversi.API.Domain\Reversi.API.Domain.csproj", "{FB34C344-1AC0-4069-B6D0-64A1C9B3872F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reversi.API.Application", "..\Reversi.API.Application\Reversi.API.Application.csproj", "{C0272179-BB99-4E50-A4F6-2CF1CBD90631}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reversi.API.Application", "..\Reversi.API.Application\Reversi.API.Application.csproj", "{C0272179-BB99-4E50-A4F6-2CF1CBD90631}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reversi.API.Infrastructure", "..\Reversi.API.Infrastructure\Reversi.API.Infrastructure.csproj", "{034D01F8-CBC9-42BC-A7C1-1AC9E08350C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reversi.API.Infrastructure", "..\Reversi.API.Infrastructure\Reversi.API.Infrastructure.csproj", "{034D01F8-CBC9-42BC-A7C1-1AC9E08350C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reversi.API", "..\Reversi.API\Reversi.API.csproj", "{8630F5D3-B042-4A2A-8ACA-76F8833F6079}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reversi.API", "..\Reversi.API\Reversi.API.csproj", "{8630F5D3-B042-4A2A-8ACA-76F8833F6079}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reversi.API.LoadTesting", "..\Reversi.API.LoadTesting\Reversi.API.LoadTesting.csproj", "{84C6AE81-D149-47DB-B8F9-F41AEA237256}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{8630F5D3-B042-4A2A-8ACA-76F8833F6079}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8630F5D3-B042-4A2A-8ACA-76F8833F6079}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8630F5D3-B042-4A2A-8ACA-76F8833F6079}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84C6AE81-D149-47DB-B8F9-F41AEA237256}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84C6AE81-D149-47DB-B8F9-F41AEA237256}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84C6AE81-D149-47DB-B8F9-F41AEA237256}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84C6AE81-D149-47DB-B8F9-F41AEA237256}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
