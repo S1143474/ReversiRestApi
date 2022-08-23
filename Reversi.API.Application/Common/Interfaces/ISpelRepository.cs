@@ -13,8 +13,21 @@ namespace Reversi.API.Application.Common.Interfaces
     {
 
         PagedList<Spel> GetAllSpellen(QueryStringParameters parameters);
+        PagedList<Spel> GetAllSpellenInQueue(QueryStringParameters parameters);
+        PagedList<Spel> GetAllSpellenInProcess(QueryStringParameters parameters);
+        PagedList<Spel> GetAllSpellenFinished(QueryStringParameters parameters);
 
         Task<Spel> GetSpelByIdAsync(Guid id);
+        Task<Spel> GetSpelInQueueByIdAsync(Guid id);
+        Task<Spel> GetSpelInProcessByIdAsync(Guid id);
+        Task<Spel> GetSpelFinishedByIdAsync(Guid id);
+
+        Task<Spel> GetSpelInQueueBySpelerTokenAsync(Guid spelerToken);
+        Task<Spel> GetSpelInProcessBySpelerTokenAsync(Guid spelerToken);
+        Task<Spel> GetSpelUnFinishedBySpelerTokenAsync(Guid spelerToken);
+        PagedList<Spel> GetSpellenFinishedBySpelerTokenAsync(Guid spelerToken, QueryStringParameters parameters);
+
+        Task<Spel> GetSpelInProcessFromSpelerOrSpelTokenAsync(Guid spelerToken, Guid token);
 
         Task<ItemList<DBSpel>> LoadSpellenAsync(CancellationToken token);
         Task<ItemList<DBSpel>> LoadSpelAsync(string spelToken, CancellationToken token);

@@ -41,7 +41,7 @@ namespace Reversi.API.Application.Spellen.Queries.GetSpel
                 throw new NotFoundException(nameof(Spel), request.Id);
             }
 
-            _logger.LogInformation($"Request with id: {_requestContext.RequestId}, Loaded 1 spel entity from the database with id: {spel.Token}.");
+            _logger.LogInformation($"Request with id: {_requestContext.RequestId}, Loaded 1 spel entity from the database with token: {spel.Token}.");
 
             return spel;
         }

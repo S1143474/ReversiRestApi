@@ -1,12 +1,9 @@
-﻿/*using Reversi.API.Application.Common;
-using System;
+﻿using Reversi.API.Application.Common;
 using System.Collections.Generic;
-using System.Text;
-using Reversi.API.Application.Common.Interfaces;
-using Reversi.API.Application.Spellen.DTO;
+using Reversi.API.Application.Common.Mappings;
+using Reversi.API.Application.Spellen.Commands.InProcessSpelMove.MoveModels;
 using Reversi.API.Domain.Entities;
 using Reversi.API.Domain.Enums;
-using Reversi.API.Infrastructure.Maps;
 
 namespace Reversi.API.Infrastructure.Services
 {
@@ -16,34 +13,40 @@ namespace Reversi.API.Infrastructure.Services
 
         public bool Afgelopen(Spel spel)
         {
-            for (int i = 0; i < spel.Bord.GetLength(0); i++)
+            var bord = spel.Bord.MapStringBordTo2DIntArr();
+            for (int i = 0; i < bord.GetLength(0); i++)
             {
-                for (int j = 0; j < spel.Bord.GetLength(1); j++)
+                for (int j = 0; j < bord.GetLength(1); j++)
                 {
-                    if (spel.Bord[i, j] == Kleur.Geen)
-                    {
-                        if (ZetMogelijk(spel, i, j))
-                            return false;
-                    }
+                    if (bord[i, j] != (int)Kleur.Geen) 
+                        continue;
+                    
+                    if (ZetMogelijk(spel, i, j))
+                        return false;
                 }
             }
 
             return true;
         }
-        public bool DoeZet(Spel spel, int rijZet, int kolomZet, out List<CoordsDTO> flippedResult)
+
+        public bool DoeZet(Spel spel, int rijZet, int kolomZet, out List<CoordsModel> flippedResult)
         {
+            var bord = spel.Bord.MapStringBordTo2DIntArr();
+
             if (ZetMogelijk(spel, rijZet, kolomZet))
             {
-                spel.Bord[rijZet, kolomZet] = spel.AandeBeurt;
+                bord[rijZet, kolomZet] = spel.AandeBeurt;
 
                 flippedResult = FlipStonesBetween(spel, rijZet, kolomZet);
 
-                spel.AandeBeurt = GetOpponentColor(spel);
+                spel.AandeBeurt = (int)GetOpponentColor(spel);
+                spel.Bord = bord.MapIntArrToBase64String();
                 return true;
             }
             else
             {
                 flippedResult = null;
+                spel.Bord = bord.MapIntArrToBase64String();
                 return false;
             }
         }
@@ -73,12 +76,13 @@ namespace Reversi.API.Infrastructure.Services
 
         public bool Pas(Spel spel)
         {
-            spel.AandeBeurt = GetOpponentColor(spel);
+            spel.AandeBeurt = (int)GetOpponentColor(spel);
             return true;
         }
 
         public bool ZetMogelijk(Spel spel, int rijZet, int kolomZet)
         {
+            var bord = spel.Bord.MapStringBordTo2DIntArr();
             // Check if Row(Y) - rijzet And Col(X) kolomzet are in between the boundaries of the bord.
             if (CheckOutOfBounds(rijZet) && CheckOutOfBounds(kolomZet))
             {
@@ -90,13 +94,15 @@ namespace Reversi.API.Infrastructure.Services
                         {
                             if (CheckOutOfBounds(j))
                             {
-                                if (spel.Bord[i, j] == Kleur.Geen)
+                                if (bord[i, j] == (int)Kleur.Geen)
                                     continue;
-                                else if (spel.Bord[i, j] == spel.AandeBeurt)
+                                else if (bord[i, j] == spel.AandeBeurt)
                                     continue;
-                                else if (spel.Bord[i, j] == GetOpponentColor(spel))
+                                else if (bord[i, j] == (int)GetOpponentColor(spel))
                                     if (CheckMovePossible(spel, rijZet, kolomZet, i, j))
-                                        return spel.Bord[rijZet, kolomZet] == Kleur.Geen;
+                                    {
+                                        return bord[rijZet, kolomZet] == (int)Kleur.Geen;
+                                    }
                             }
                         }
                     }
@@ -106,9 +112,11 @@ namespace Reversi.API.Infrastructure.Services
             return false;
         }
 
-        public List<CoordsDTO> FlipStonesBetween(Spel spel, int startY, int startX)
+        public List<CoordsModel> FlipStonesBetween(Spel spel, int startY, int startX)
         {
-            var cellsToFlip = new List<CoordsDTO>();
+            var cellsToFlip = new List<CoordsModel>();
+
+            var bord = spel.Bord.MapStringBordTo2DIntArr();
 
             for (int i = startY - 1; i <= startY + 1; i++)
             {
@@ -128,10 +136,10 @@ namespace Reversi.API.Infrastructure.Services
 
                     Kleur tempKLeur = GetOpponentColor(spel);
 
-                    while (spel.Bord[currY, currX] != spel.AandeBeurt)
+                    while (bord[currY, currX] != spel.AandeBeurt)
                     {
-                        spel.Bord[currY, currX] = spel.AandeBeurt;
-                        cellsToFlip.Add(new CoordsDTO() { X = currX, Y = currY });
+                        bord[currY, currX] = spel.AandeBeurt;
+                        cellsToFlip.Add(new CoordsModel { X = currX, Y = currY });
 
                         if (CheckOutOfBounds(currY + stepYDir) && CheckOutOfBounds(currX + stepXDir))
                         {
@@ -141,7 +149,8 @@ namespace Reversi.API.Infrastructure.Services
                     }
                 }
             }
-            cellsToFlip.Add(new CoordsDTO { X = startX, Y = startY });
+            cellsToFlip.Add(new CoordsModel { X = startX, Y = startY });
+            spel.Bord = bord.MapIntArrToBase64String();
             return cellsToFlip;
         }
 
@@ -153,20 +162,23 @@ namespace Reversi.API.Infrastructure.Services
             var currY = y;
             var currX = x;
 
-*//*            var _prevY = 0;
+            var bord = spel.Bord.MapStringBordTo2DIntArr();
+
+/*            var _prevY = 0;
             var _prevX = 0;
-*//*
+*/
             for (int i = 0; i < _BORD_SIZE; i++)
             {
                 if (CheckOutOfBounds(currY) && CheckOutOfBounds(currX))
                 {
-                    if (spel.Bord[currY, currX] == Kleur.Geen)
+                    if (bord[currY, currX] == (int)Kleur.Geen)
                         return false;
 
-                    if (spel.Bord[currY, currX] == spel.AandeBeurt)
+                    if (bord[currY, currX] == spel.AandeBeurt)
                     {
-*//*                        _prevY = currY;
-                        _prevX = currX;*//*
+                        /*                        _prevY = currY;
+                                                _prevX = currX;*/
+                        spel.Bord = bord.MapIntArrToBase64String();
                         return true;
                     }
 
@@ -181,8 +193,11 @@ namespace Reversi.API.Infrastructure.Services
         public bool CheckOutOfBounds(int bound) => (bound >= 0 && bound < _BORD_SIZE);
 
 
-        public Kleur GetOpponentColor(Spel spel) => spel.AandeBeurt.Equals(Kleur.Zwart) ? Kleur.Wit : Kleur.Zwart;
+        public Kleur GetOpponentColor(Spel spel)
+        {
+            var result =  spel.AandeBeurt.Equals((int)Kleur.Zwart) ? Kleur.Wit : Kleur.Zwart;
+            return result;
+        } 
 
     }
 }
-*/

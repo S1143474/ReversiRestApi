@@ -37,10 +37,121 @@ namespace Reversi.API.Infrastructure.Repository
                 .ToPagedList(sortedSpellen, parameters.PageNumber, parameters.PageSize);
         }
 
+        public PagedList<Spel> GetAllSpellenInQueue(QueryStringParameters parameters)
+        {
+            var spellenInQueue = FindByCondition(
+                spel => spel.Speler2Token == null && spel.StartedAt == null);
+
+            var sortedSpellenInQueue = _sortHelper.ApplySort(spellenInQueue, parameters.OrderBy);
+            
+            return PagedList<Spel>
+                .ToPagedList(sortedSpellenInQueue, parameters.PageNumber, parameters.PageSize);
+        }
+
+        public PagedList<Spel> GetAllSpellenInProcess(QueryStringParameters parameters)
+        {
+            var spellenInProcess = FindByCondition(
+                spel => spel.StartedAt != null &&
+                        spel.FinishedAt == null);
+
+            var sortedSpellenInProcess = _sortHelper.ApplySort(spellenInProcess, parameters.OrderBy);
+
+            return PagedList<Spel>
+                .ToPagedList(sortedSpellenInProcess, parameters.PageNumber, parameters.PageSize);
+        }
+
+        public PagedList<Spel> GetAllSpellenFinished(QueryStringParameters parameters)
+        {
+            var spellenFinished = FindByCondition(spel =>
+                spel.FinishedAt != null);
+
+            var sortedSpellenFinished = _sortHelper.ApplySort(spellenFinished, parameters.OrderBy);
+
+            return PagedList<Spel>
+                .ToPagedList(sortedSpellenFinished, parameters.PageNumber, parameters.PageSize);
+        }
+
+        // ---- Get Spel Entities Based On Token ----
         public async Task<Spel> GetSpelByIdAsync(Guid id)
         {
             return await FindByCondition(spel => 
                     spel.Token.Equals(id))
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Spel> GetSpelInQueueByIdAsync(Guid id)
+        {
+            return await FindByCondition(spel =>
+                spel.Speler2Token == null &&
+                spel.StartedAt == null &&
+                spel.Token.Equals(id))
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Spel> GetSpelInProcessByIdAsync(Guid id)
+        {
+            return await FindByCondition(spel => 
+                    spel.StartedAt != null &&
+                    spel.FinishedAt == null &&
+                    spel.Token.Equals(id))
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Spel> GetSpelFinishedByIdAsync(Guid id)
+        {
+            return await FindByCondition(spel =>
+                spel.Token.Equals(id) &&
+                spel.FinishedAt != null).FirstOrDefaultAsync();
+        }
+
+        // ---- Get Spel Entities Based On SpelerToken ----
+        public async Task<Spel> GetSpelInQueueBySpelerTokenAsync(Guid spelerToken)
+        {
+            return await FindByCondition(spel => 
+                spel.StartedAt == null &&
+                spel.FinishedAt == null &&
+                (spel.Speler1Token.Equals(spelerToken))).FirstOrDefaultAsync();
+        }
+
+        public async Task<Spel> GetSpelInProcessBySpelerTokenAsync(Guid spelerToken)
+        {
+            return await FindByCondition(spel =>
+                    spel.StartedAt != null &&
+                    spel.FinishedAt == null &&
+                    (spel.Speler1Token.Equals(spelerToken) || 
+                     spel.Speler2Token.Equals(spelerToken)))
+                .FirstOrDefaultAsync();
+        }
+
+        public PagedList<Spel> GetSpellenFinishedBySpelerTokenAsync(Guid spelerToken, QueryStringParameters parameters)
+        {
+            var spellenFinished = FindByCondition(spel =>
+                spel.FinishedAt != null &&
+                (spel.Speler1Token.Equals(spelerToken) ||
+                 spel.Speler2Token.Equals(spelerToken)));
+
+            var sortedSpellenFinished = _sortHelper.ApplySort(spellenFinished, parameters.OrderBy);
+
+            return PagedList<Spel>
+                .ToPagedList(sortedSpellenFinished, parameters.PageNumber, parameters.PageSize);
+        }
+
+        public async Task<Spel> GetSpelUnFinishedBySpelerTokenAsync(Guid spelerToken)
+        {
+            return await FindByCondition(spel => 
+                spel.FinishedAt == null &&
+                (spel.Speler1Token.Equals(spelerToken) ||
+                 spel.Speler2Token.Equals(spelerToken))).FirstOrDefaultAsync();
+        }
+
+        public async Task<Spel> GetSpelInProcessFromSpelerOrSpelTokenAsync(Guid spelerToken, Guid token)
+        {
+            return await FindByCondition(spel =>
+                    spel.StartedAt != null &&
+                    spel.FinishedAt == null &&
+                    (spel.Speler1Token.Equals(spelerToken) ||
+                     spel.Speler2Token.Equals(spelerToken) ||
+                     spel.Token.Equals(token)))
                 .FirstOrDefaultAsync();
         }
 

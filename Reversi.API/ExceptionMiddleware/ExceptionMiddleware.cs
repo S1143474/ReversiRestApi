@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Reversi.API.Application.Common.Exceptions;
 using Reversi.API.Application.Common.Interfaces;
+using Reversi.API.Domain.Common.Exceptions;
 
 namespace Reversi.API.ExceptionMiddleware
 {
@@ -28,6 +29,11 @@ namespace Reversi.API.ExceptionMiddleware
             {
                 await _next(httpContext);
             }
+            catch (DefaultGuidException dgex)
+            {
+                _logger.LogError($"A new default guid exception has been thrown by request id: (id), exception: {dgex}");
+                await HandleExceptionAsync(httpContext, dgex);
+            }
             catch (NotFoundException nfEx)
             {
                 _logger.LogError($"A new not found exception has been thrown by request id: (id), exception: {nfEx}");
@@ -47,7 +53,9 @@ namespace Reversi.API.ExceptionMiddleware
 
             var message = exception switch
             {
-                NotFoundException => "Not found error from the custom middleware.",
+                DefaultGuidException => "A token cannot be default.",
+                SelfParticipationException => "A player cannot participate in a game created by itself.",
+                NotFoundException => "Spel was not found.",
                 _ => "Internal server error."
             };
             ;

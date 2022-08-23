@@ -5,6 +5,8 @@ using Reversi.API.Application.Common;
 using Reversi.API.Application.Common.Interfaces;
 using Reversi.API.Infrastructure.Persistence;
 using Reversi.API.Infrastructure.Repository;
+using Reversi.API.Infrastructure.Services;
+
 /*using Reversi.API.Infrastructure.Services;
 */
 namespace Reversi.API.Infrastructure
@@ -20,8 +22,8 @@ namespace Reversi.API.Infrastructure
             services.AddDbContext<RepositoryContext>(options => options.UseSqlServer(connectionString));
 
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
-/*            services.AddSingleton<ISpelMovement, SpelMovementService>();
-*/
+            services.AddSingleton<ISpelMovement, SpelMovementService>();
+
             return services;
         }
     }

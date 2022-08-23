@@ -21,7 +21,62 @@ namespace Reversi.API.Infrastructure.Persistence
             throw new NotImplementedException();
         }
 
+        public PagedList<Spel> GetAllSpellenInQueue(QueryStringParameters parameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        public PagedList<Spel> GetAllSpellenInProcess(QueryStringParameters parameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        public PagedList<Spel> GetAllSpellenFinished(QueryStringParameters parameters)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<Spel> GetSpelByIdAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Spel> GetSpelInQueueByIdAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Spel> GetSpelInProcessByIdAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Spel> GetSpelFinishedByIdAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Spel> GetSpelInQueueBySpelerTokenAsync(Guid spelerToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Spel> GetSpelInProcessBySpelerTokenAsync(Guid spelerToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Spel> GetSpelUnFinishedBySpelerTokenAsync(Guid spelerToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public PagedList<Spel> GetSpellenFinishedBySpelerTokenAsync(Guid spelerToken, QueryStringParameters parameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Spel> GetSpelInProcessFromSpelerOrSpelTokenAsync(Guid spelerToken, Guid token)
         {
             throw new NotImplementedException();
         }
