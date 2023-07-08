@@ -23,7 +23,9 @@ namespace Reversi.API.Application.Common
 
         bool ZetMogelijk(Spel spel, int rijZet, int kolomZet);
 
-        bool DoeZet(Spel spel, int rijZet, int kolomZet, out List<CoordsModel> flippedResult);
+        bool DoeZet(ref Spel spel, int rijZet, int kolomZet, out List<CoordsModel> flippedResult);
+
+        bool Opgeven(Spel spel);
 
         // Methods below used to be private.
 

@@ -51,6 +51,8 @@ namespace Reversi.API.Application.Spellen.Commands.CreateSPel
             spel.Bord = bord.MapIntArrToBase64String();
             spel.CreatedAt = DateTime.Now.ToUniversalTime();
             spel.AandeBeurt = 2;
+            spel.AOFFBySpeler1 = 2;
+            spel.AOFFBySpeler2 = 2;
 
             _repository.Spel.Create(spel);
             await _repository.SaveAsync();

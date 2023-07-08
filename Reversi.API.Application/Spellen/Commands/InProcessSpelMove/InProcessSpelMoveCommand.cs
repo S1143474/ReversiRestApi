@@ -8,8 +8,10 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Reversi.API.Application.Common;
 using Reversi.API.Application.Common.Interfaces;
+using Reversi.API.Application.Common.Mappings;
 using Reversi.API.Application.Spellen.Commands.InProcessSpelMove.MoveModels;
 using Reversi.API.Application.Spellen.Queries.GetSpel;
+using Reversi.API.Domain.Entities;
 using Reversi.API.Domain.Enums;
 
 namespace Reversi.API.Application.Spellen.Commands.InProcessSpelMove
@@ -70,9 +72,12 @@ namespace Reversi.API.Application.Spellen.Commands.InProcessSpelMove
 
             _logger.LogInformation($"Request with id: {_requestContext.RequestId}, Loaded 1 in process spel entity from the database with token: {spel.Token}.");
 
-            bool notYourTurn = (spel.AandeBeurt == (int)Kleur.Wit && spel.Speler1Token != request.SpelerToken) ||
-                               (spel.AandeBeurt == (int)Kleur.Zwart && spel.Speler2Token != request.SpelerToken);
 
+            bool notYourTurn = (spel.AandeBeurt == (int)Kleur.Zwart && spel.Speler2Token == request.SpelerToken) ||
+                               (spel.AandeBeurt == (int)Kleur.Wit && spel.Speler1Token == request.SpelerToken);
+           /* bool notYourTurn = (spel.AandeBeurt == (int)Kleur.Wit && spel.Speler1Token != request.SpelerToken) ||
+                               (spel.AandeBeurt == (int)Kleur.Zwart && spel.Speler2Token != request.SpelerToken);
+*/
             if (notYourTurn)
             {
                 _logger.LogError($"Error for request id: {_requestContext.RequestId}, player with token: {request.SpelerToken} from game: {spel.Token} tried to execute a move while his opponent is still trying to figure out which move to pull.");
@@ -85,22 +90,36 @@ namespace Reversi.API.Application.Spellen.Commands.InProcessSpelMove
                 };
             }
 
-            bool isSpelFinished = _spelMovement.Afgelopen(spel);
+            var finishedSpelResult = await checkIfSpelIsFinished(spel, request);
+            if (finishedSpelResult != null)
+            {
+                return finishedSpelResult;
+            }
+            /*bool isSpelFinished = _spelMovement.Afgelopen(spel);
 
             if (isSpelFinished)
             {
                 _logger.LogInformation($"Request with id: {_requestContext.RequestId}, spel with token: {spel.Token} has finished.");
 
+                spel.FinishedAt = spel.UpdatedAt = DateTime.Now;
+                spel.AmountOfUpdates++;
+                spel.UpdatedBy = request.SpelerToken ?? Guid.Empty;
+                spel.WonBy = spel.AandeBeurt == 1 ? spel.Speler1Token : spel.Speler2Token;
+                spel.LostBy = spel.AandeBeurt == 1 ? spel.Speler2Token : spel.Speler1Token;
+                _repository.Spel.Update(spel);
+                await _repository.SaveAsync();
                 return new FinishedModel
                 {
                     IsSpelFinished = true,
                     IsSpelDraw = false,
 
                     // TODO: Fix this because speler1 hopefully doesn't always win.
-                    WinnerToken = spel.Speler1Token,
-                    LoserToken = spel.Speler2Token ?? throw new Exception("Speler2token not found.")
+                    WinnerToken = spel.WonBy ?? throw new Exception("WinnerToken not found."),
+                    LoserToken = spel.LostBy ?? throw new Exception("LoserToken not found.")
                 };
-            }
+
+                
+            }*/
 
             if (request.HasPassed)
             {
@@ -125,20 +144,50 @@ namespace Reversi.API.Application.Spellen.Commands.InProcessSpelMove
             else
             {
                 List<CoordsModel> flippedResult;
+                var currentPlayer = spel.AandeBeurt;
 
-                bool moveResult = _spelMovement.DoeZet(spel, request.Y, request.X, out flippedResult);
+                bool moveResult = _spelMovement.DoeZet(ref spel, request.Y, request.X, out flippedResult);
 
                 if (moveResult)
                     _logger.LogInformation(
-                        $"Request with id: {_requestContext.RequestId}, user with token: {request.SpelerToken} has passed his turn.");
+                        $"Request with id: {_requestContext.RequestId}, user with token: {request.SpelerToken} has executed his turn.");
                 else
                     _logger.LogInformation(
-                        $"Request with id: {_requestContext.RequestId}, user with token: {request.SpelerToken} tried to pass but couldn't.");
+                        $"Request with id: {_requestContext.RequestId}, user with token: {request.SpelerToken} tried to execute but couldn't.");
 
+                // Check the flipped fiches and save the spel bord accordingly.
+                if (flippedResult != null)
+                {
+                    var intArrBord = spel.Bord.MapStringBordTo2DIntArr();
+                    foreach (var chr in flippedResult)
+                    {
+                        intArrBord[chr.Y, chr.X] = currentPlayer;
+                    }
+                    spel.Bord = intArrBord.MapIntArrToBase64String();
 
+                    if (spel.AandeBeurt == 1)
+                    {
+                        spel.AOFFBySpeler1 += flippedResult.Count;
+                        spel.AOFFBySpeler2 -= (flippedResult.Count - 1);
+                    } else
+                    {
+                        spel.AOFFBySpeler2 += flippedResult.Count;
+                        spel.AOFFBySpeler1 -= (flippedResult.Count - 1);
+                    }
+
+                }
+
+                
                 _repository.Spel.Update(spel);
                 await _repository.SaveAsync();
 
+                var finishedSpelResultAfterMove = await checkIfSpelIsFinished(spel, request);
+                if (finishedSpelResultAfterMove != null)
+                {
+                    return finishedSpelResultAfterMove;
+                }
+
+                // Return Move executedmodel of current move
                 return new MoveExecutedModel
                 {
                     NotExecutedMessage = (moveResult) ? null : "Wrong action, please try again.",
@@ -149,6 +198,35 @@ namespace Reversi.API.Application.Spellen.Commands.InProcessSpelMove
             }
 
 
+        }
+
+        private async Task<FinishedModel?> checkIfSpelIsFinished(Spel spel, InProcessSpelMoveCommand request)
+        {
+            bool isSpelFinished = _spelMovement.Afgelopen(spel);
+
+            if (isSpelFinished)
+            {
+                _logger.LogInformation($"Request with id: {_requestContext.RequestId}, spel with token: {spel.Token} has finished.");
+
+                spel.FinishedAt = spel.UpdatedAt = DateTime.Now;
+                spel.AmountOfUpdates++;
+                spel.UpdatedBy = request.SpelerToken ?? Guid.Empty;
+                spel.WonBy = spel.AandeBeurt == 1 ? spel.Speler2Token : spel.Speler1Token;
+                spel.LostBy = spel.AandeBeurt == 1 ? spel.Speler1Token : spel.Speler2Token;
+                _repository.Spel.Update(spel);
+                await _repository.SaveAsync();
+                return new FinishedModel
+                {
+                    IsSpelFinished = true,
+                    IsSpelDraw = false,
+
+                    // TODO: Fix this because speler1 hopefully doesn't always win.
+                    WinnerToken = spel.WonBy ?? throw new Exception("WinnerToken not found."),
+                    LoserToken = spel.LostBy ?? throw new Exception("LoserToken not found.")
+                };
+            }
+
+            return null;
         }
     }
 }

@@ -45,7 +45,7 @@ namespace ReversiRestApiNUnitTest
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(2, result.Count);
+                Assert.AreEqual(2, result.Count);
         }
 
         #region PlaceNewGameReversi
@@ -254,7 +254,7 @@ namespace ReversiRestApiNUnitTest
             };
 
             // Act
-            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value;
+            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value as PutDoMoveExecutedJsonObj;
 
             // Assert
             Assert.IsTrue(result.IsPlaceExecuted);
@@ -274,7 +274,7 @@ namespace ReversiRestApiNUnitTest
             };
 
             // Act
-            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value;
+            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value as PutDoMoveExecutedJsonObj;
 
             // Assert
             Assert.IsTrue(result.IsPlaceExecuted);
@@ -294,7 +294,7 @@ namespace ReversiRestApiNUnitTest
             };
 
             // Act
-            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value;
+            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value as PutDoMoveExecutedJsonObj;
 
             // Assert
             Assert.IsFalse(result.IsPlaceExecuted);
@@ -314,7 +314,7 @@ namespace ReversiRestApiNUnitTest
             };
 
             // Act
-            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value;
+            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value as PutDoMoveExecutedJsonObj;
 
             // Assert
             Assert.IsFalse(result.IsPlaceExecuted);
@@ -334,7 +334,7 @@ namespace ReversiRestApiNUnitTest
             };
 
             // Act
-            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value;
+            var result = _spelController.PutDoMove(CancellationToken.None, moveJsonObj).Result.Value as PutDoMoveExecutedJsonObj;
 
             // Assert
             Assert.IsTrue(result.IsPlaceExecuted);

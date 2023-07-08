@@ -4,6 +4,7 @@ using Reversi.API.Application.Common.Mappings;
 using Reversi.API.Application.Spellen.Commands.InProcessSpelMove.MoveModels;
 using Reversi.API.Domain.Entities;
 using Reversi.API.Domain.Enums;
+using System;
 
 namespace Reversi.API.Infrastructure.Services
 {
@@ -29,7 +30,7 @@ namespace Reversi.API.Infrastructure.Services
             return true;
         }
 
-        public bool DoeZet(Spel spel, int rijZet, int kolomZet, out List<CoordsModel> flippedResult)
+        public bool DoeZet(ref Spel spel, int rijZet, int kolomZet, out List<CoordsModel> flippedResult)
         {
             var bord = spel.Bord.MapStringBordTo2DIntArr();
 
@@ -37,7 +38,7 @@ namespace Reversi.API.Infrastructure.Services
             {
                 bord[rijZet, kolomZet] = spel.AandeBeurt;
 
-                flippedResult = FlipStonesBetween(spel, rijZet, kolomZet);
+                flippedResult = FlipStonesBetween(ref spel, rijZet, kolomZet);
 
                 spel.AandeBeurt = (int)GetOpponentColor(spel);
                 spel.Bord = bord.MapIntArrToBase64String();
@@ -80,6 +81,15 @@ namespace Reversi.API.Infrastructure.Services
             return true;
         }
 
+        public bool Opgeven(Spel spel)
+        {
+            var endTime = DateTime.Now;
+            spel.FinishedAt = endTime;
+            spel.WonBy = GetOpponentGuid(spel);
+            spel.LostBy = GetSpelerGuid(spel);
+            return false;
+        }
+
         public bool ZetMogelijk(Spel spel, int rijZet, int kolomZet)
         {
             var bord = spel.Bord.MapStringBordTo2DIntArr();
@@ -112,7 +122,7 @@ namespace Reversi.API.Infrastructure.Services
             return false;
         }
 
-        public List<CoordsModel> FlipStonesBetween(Spel spel, int startY, int startX)
+        public List<CoordsModel> FlipStonesBetween(ref Spel spel, int startY, int startX)
         {
             var cellsToFlip = new List<CoordsModel>();
 
@@ -149,6 +159,8 @@ namespace Reversi.API.Infrastructure.Services
                     }
                 }
             }
+
+            bord[startX, startY] = spel.AandeBeurt;
             cellsToFlip.Add(new CoordsModel { X = startX, Y = startY });
             spel.Bord = bord.MapIntArrToBase64String();
             return cellsToFlip;
@@ -198,6 +210,18 @@ namespace Reversi.API.Infrastructure.Services
             var result =  spel.AandeBeurt.Equals((int)Kleur.Zwart) ? Kleur.Wit : Kleur.Zwart;
             return result;
         } 
+
+        public Guid? GetOpponentGuid(Spel spel)
+        {
+            var result = spel.AandeBeurt.Equals(1) ? spel.Speler2Token : spel.Speler1Token;
+            return result;
+        }
+
+        public Guid? GetSpelerGuid(Spel spel)
+        {
+            var result = spel.AandeBeurt.Equals(1) ? spel.Speler1Token : spel.Speler2Token;
+            return result;
+        }
 
     }
 }

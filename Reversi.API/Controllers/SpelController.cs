@@ -324,7 +324,7 @@ namespace Reversi.API.Controllers
                 SpelerToken = surrenderDto.SpelerToken ?? throw new Exception("SpelerToken was not in the request body")
             });
 
-            return NoContent();
+            return Ok(true);
         }
 
         /// <summary>
@@ -388,7 +388,7 @@ namespace Reversi.API.Controllers
         [Route("finished")]
         [QueryStringConstraint("spelerToken", true)]
         [QueryStringConstraint("", false)]
-        public async Task<IActionResult> GetSpelFinishedBySpelerTokenAsync([FromQuery] Guid spelerToken, [FromQuery] SpelParameters parameters)
+        public async Task<IActionResult> GetSpelFinishedBySpelerTokenAsync([FromQuery] Guid spelerToken, [FromQuery] FinishedSpelParameters parameters)
         {
             var query = await Mediator.Send(new GetSpellenFinishedBySpelerTokenQuery
             {
@@ -418,7 +418,10 @@ namespace Reversi.API.Controllers
         /// </summary>
         /// <param name="spelerToken"></param>
         /// <returns>A single unfinished spel entity.</returns>
-        [HttpGet("unfinished")]
+        [HttpGet]
+        [Route("unfinished")]
+        [QueryStringConstraint("spelerToken", true)]
+        [QueryStringConstraint("", false)]
         public async Task<IActionResult> GetSpelUnFinishedBySpelerTokenAsync([FromQuery] Guid spelerToken)
         {
             var query = await Mediator.Send(new GetSpelUnFinishedBySpelerTokenQuery
