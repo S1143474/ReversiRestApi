@@ -185,5 +185,10 @@ namespace Reversi.API.Infrastructure.Persistence
         {
             throw new NotImplementedException();
         }
+
+        public bool DeleteSpel(Guid spelToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

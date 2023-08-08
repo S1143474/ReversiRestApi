@@ -32,6 +32,7 @@ using Reversi.API.Application.Spellen.Queries.GetSpellen;
 using Reversi.API.DataTransferObjects.Move;
 using Reversi.API.DataTransferObjects.Requests;
 using Reversi.API.Filters;
+using Reversi.API.Application.Spellen.Commands.DeleteSpel;
 
 namespace Reversi.API.Controllers
 {
@@ -432,6 +433,18 @@ namespace Reversi.API.Controllers
             var spelUnFinished = _mapper.Map<SpelDto>(query);
 
             return Ok(spelUnFinished);
+        }
+
+        [HttpDelete]
+        [Route("unfinished/delete/{id}")]
+        public async Task<IActionResult> DeleteSpelUnfinishedBySpelTokenAsync(Guid id)
+        {
+            var command = await Mediator.Send(new DeleteSpelUnFinishedBySpelTokenCommand
+            {
+                SpelToken = id,
+            });
+
+            return Ok(command);
         }
 
         /*[HttpGet("index")]

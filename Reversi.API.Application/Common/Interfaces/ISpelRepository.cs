@@ -11,7 +11,7 @@ namespace Reversi.API.Application.Common.Interfaces
 {
     public interface ISpelRepository : IBaseRepository<Spel>
     {
-
+        bool DeleteSpel(Guid spelToken);
         PagedList<Spel> GetAllSpellen(QueryStringParameters parameters);
         PagedList<Spel> GetAllSpellenInQueue(QueryStringParameters parameters);
         PagedList<Spel> GetAllSpellenInProcess(QueryStringParameters parameters);

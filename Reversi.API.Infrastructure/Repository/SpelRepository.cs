@@ -26,6 +26,21 @@ namespace Reversi.API.Infrastructure.Repository
             _sortHelper = sortHelper;
         }
 
+        public bool DeleteSpel(Guid spelToken)
+        {
+            var spel = FindByCondition(s => s.Token.Equals(spelToken)).FirstOrDefault();
+
+            if (spel == null)
+                return false;
+
+
+            Delete(spel);
+            RepositoryContext.SaveChanges();
+
+            spel = FindByCondition(s => s.Token.Equals(spelToken)).FirstOrDefault();
+            return spel == null;
+        }
+
         public PagedList<Spel> GetAllSpellen(QueryStringParameters parameters)
         {
             var spellen = FindAll()
