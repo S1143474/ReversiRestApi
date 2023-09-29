@@ -19,7 +19,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Newtonsoft.Json;
 using Reversi.API.Application.Common.RequestParameters;
 using Reversi.API.Application.Spellen.Commands.CreateSPel;
 using Reversi.API.Application.Spellen.Commands.InProcessSpelMove;
@@ -33,6 +32,7 @@ using Reversi.API.DataTransferObjects.Move;
 using Reversi.API.DataTransferObjects.Requests;
 using Reversi.API.Filters;
 using Reversi.API.Application.Spellen.Commands.DeleteSpel;
+using System.Text.Json;
 
 namespace Reversi.API.Controllers
 {
@@ -72,7 +72,7 @@ namespace Reversi.API.Controllers
                 query.HasPrevious
             };
 
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
             var spelResult = _mapper.Map<List<SpelDto>>(query);
 
@@ -142,7 +142,7 @@ namespace Reversi.API.Controllers
                 query.HasPrevious
             };
 
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
             var spelResult = _mapper.Map<List<SpelDto>>(query);
 
@@ -239,7 +239,7 @@ namespace Reversi.API.Controllers
                 query.HasPrevious
             };
 
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
             var spellenInProcess = _mapper.Map<List<SpelDto>>(query);
 
@@ -354,7 +354,7 @@ namespace Reversi.API.Controllers
                 query.HasPrevious
             };
 
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
             var spellenFinished = _mapper.Map<List<SpelFinishedDto>>(query);
 
@@ -407,7 +407,7 @@ namespace Reversi.API.Controllers
                 query.HasPrevious
             };
 
-            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(metadata));
 
             var spellenFinished = _mapper.Map<List<SpelFinishedDto>>(query);
 

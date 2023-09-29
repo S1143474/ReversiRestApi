@@ -50,7 +50,7 @@ namespace Reversi.API.Application.Spellen.Commands.SurrenderSpel
 
             _logger.LogInformation($"Request with id: {_requestContext.RequestId}, Loaded 1 in process spel entity from the database with token: {spelToSurrender.Token}");
 
-            spelToSurrender.FinishedAt = spelToSurrender.UpdatedAt = DateTime.Now.ToUniversalTime();
+            spelToSurrender.FinishedAt = spelToSurrender.UpdatedAt = DateTime.Now;
             spelToSurrender.AmountOfUpdates++;
             spelToSurrender.UpdatedBy = request.SpelerToken;
             

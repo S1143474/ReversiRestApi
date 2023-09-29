@@ -187,14 +187,15 @@ namespace Reversi.API.Application.Spellen.Commands.InProcessSpelMove
                     return finishedSpelResultAfterMove;
                 }
 
-                // Return Move executedmodel of current move
-                return new MoveExecutedModel
+                var executeResult = new MoveExecutedModel
                 {
                     NotExecutedMessage = (moveResult) ? null : "Wrong action, please try again.",
                     IsMovementExecuted = moveResult,
-                    CoordsToTurnAround = flippedResult.ToList(),
+                    CoordsToTurnAround = moveResult ? flippedResult.ToList() : null,
                     PlayerTurn = spel.AandeBeurt
                 };
+                // Return Move executedmodel of current move
+                return executeResult;
             }
 
 
