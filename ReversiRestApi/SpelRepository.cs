@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ReversiRestApi
@@ -35,33 +36,53 @@ namespace ReversiRestApi
         /// Adds spel to Spellen List
         /// </summary>
         /// <param name="spel"></param>
-        public void AddSpel(Spel spel) => Spellen.Add(spel);
+        public async Task AddSpel(CancellationToken token, Spel spel) => Spellen.Add(spel);
 
         /// <summary>
         /// Retrieves a Spel via a specific spelToken
         /// </summary>
         /// <param name="spelToken"></param>
         /// <returns></returns>
-        public Spel GetSpel(string spelToken)
+        public async Task<Spel> GetSpel(CancellationToken token, string spelToken)
         {
             return Spellen.Where(spel => spel.Token != null && spel.Token.Equals(spelToken)).Select(spel => spel).FirstOrDefault();
+        }
+
+        public Task<Spel> GetSpelFromSpeler1(CancellationToken token, string speler1Token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Spel> GetSpelFromSpeler2(CancellationToken token, string speler2Token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Spel> SelectSpelTokenViaSpelerToken(CancellationToken token, string spelerToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> FinishSpel(CancellationToken token, string spelToken)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
         /// Returns list of all Spel objects in Spellen
         /// </summary>
         /// <returns></returns>
-        public List<Spel> GetSpellen()
+        public async Task<List<Spel>> GetSpellenAsync(CancellationToken token)
         {
             return Spellen;
         }
 
-        public bool UpdateSpel(Spel spel)
+        public Task<bool> UpdateSpel(CancellationToken token, Spel spel)
         {
             throw new NotImplementedException();
         }
 
-        public bool JoinSpel(JoinGameObj joinGameObj)
+        public Task<bool> JoinSpel(CancellationToken token, JoinGameObj joinGameObj)
         {
             throw new NotImplementedException();
         }

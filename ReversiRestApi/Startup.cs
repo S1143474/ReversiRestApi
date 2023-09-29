@@ -36,7 +36,7 @@ namespace ReversiRestApi
             {
                 c.AddPolicy(MyAllowSpecificOrigins, options =>
                     options.WithOrigins(new string[] { "https://localhost:44309", "http://localhost:3000", "http://127.0.0.1:5500/" })
-                    .WithMethods("GET", "PUT")
+                    .WithMethods("*")
                     .WithHeaders("content-type")
                 );
             });
@@ -56,7 +56,7 @@ namespace ReversiRestApi
 
             app.UseCors(options => 
                 options.WithOrigins("https://localhost:44309", "http://localhost:3000")
-                .WithMethods("GET", "PUT")
+                .WithMethods("*")
                 .WithHeaders("content-type")
             );
 
