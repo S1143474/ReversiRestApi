@@ -9,6 +9,7 @@ namespace ReversiRestApi
 {
     public interface ISpelRepository
     {
+        // Old methods
         Task AddSpel(CancellationToken token, Spel spel);
 
         public Task<List<Spel>> GetSpellenAsync(CancellationToken token);
@@ -25,5 +26,26 @@ namespace ReversiRestApi
         Task<Spel> SelectSpelTokenViaSpelerToken(CancellationToken token, string spelerToken);
 
         Task<bool> FinishSpel(CancellationToken token, string spelToken);
+
+        // New methods
+        /*Task<bool> InsertSpelAsync(Spel spel, CancellationToken token);
+
+        Task<Spel> LoadSpelAsync(string spelToken, CancellationToken token);
+
+        Task<Spel> LoadNotEndedSpelFromSpeler1TokenAsync(string speler1Token, CancellationToken token);
+
+        Task<Spel> LoadNotEndedSpelFromSpeler2TokenAsync(string speler2Token, CancellationToken token);
+
+        Task<IEnumerable<Spel>> LoadSpellenAsync(CancellationToken token);
+
+        Task<string> LoadSpelTokenViaSpelerTokenAsync(string spelerToken, CancellationToken token);
+
+        Task<bool> UpdateSpelBordAndBeurtAsync(Spel spel, CancellationToken token);
+
+        Task<bool> UpdateSpelJoinAsync(JoinGameObj joingameObj, CancellationToken token);
+
+        Task<bool> UpdateSpelIsFinishedAsync(string spelToken, CancellationToken token);
+        */
+
     }
 }

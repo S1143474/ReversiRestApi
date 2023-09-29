@@ -1186,6 +1186,80 @@ namespace ReversiRestApiNUnitTest
             Assert.AreEqual(Kleur.Geen, spel.Bord[7, 7]);
             Assert.AreEqual(Kleur.Geen, spel.Bord[7, 0]);
         }
+
+        [Test]
+        public void DoeZet_ZetWisseltTweeRijenFichesLinksEnOnder_TweeRijenFichesGedraaid()
+         {
+            // Arrange
+            Spel spel = new Spel();
+            spel.Bord[4, 2] = Kleur.Wit;
+            spel.Bord[4, 3] = Kleur.Wit;
+            spel.Bord[4, 4] = Kleur.Wit;
+            spel.Bord[3, 3] = Kleur.Zwart;
+            spel.Bord[3, 4] = Kleur.Zwart;
+            spel.Bord[2, 3] = Kleur.Zwart;
+
+            spel.AandeBeurt = Kleur.Wit;
+
+            //   0 1 2 3 4 5 6 7
+            //           V
+            // 0 0 0 0 0 0 0 0 0
+            // 1 0 0 0 0 0 0 0 0
+            // 2 0 0 0 2 1 0 0 0 <
+            // 3 0 0 0 1 1 0 0 0
+            // 4 0 0 1 2 1 0 0 0
+            // 5 0 0 0 0 0 0 0 0
+            // 6 0 0 0 0 0 0 0 0
+            // 7 0 0 0 0 0 0 0 0
+
+            // Act
+            var actual = spel.DoeZet(2, 4);
+
+            // Assert
+            Assert.IsTrue(actual);
+            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
+            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 4]);
+
+            Assert.AreEqual(Kleur.Geen, spel.Bord[5, 1]);
+            Assert.AreEqual(Kleur.Geen, spel.Bord[5, 4]);
+        }
+
+        [Test]
+        public void DoeZet_ZetWisseltTweeRijenFichesRechtsEnOnder_TweeRijenFichesGedraaid()
+        {
+            // Arrange
+            Spel spel = new Spel();
+            spel.Bord[3, 3] = Kleur.Wit;
+            spel.Bord[3, 4] = Kleur.Wit;
+            spel.Bord[3, 5] = Kleur.Wit;
+            spel.Bord[4, 3] = Kleur.Zwart;
+            spel.Bord[4, 4] = Kleur.Zwart;
+            spel.Bord[4, 5] = Kleur.Zwart;
+            spel.Bord[5, 4] = Kleur.Zwart;
+
+            spel.AandeBeurt = Kleur.Zwart;
+
+            //   0 1 2 3 4 5 6 7
+            //           V
+            // 0 0 0 0 0 0 0 0 0
+            // 1 0 0 0 0 0 0 0 0
+            // 2 0 0 0 0 2 0 0 0 <
+            // 3 0 0 0 1 1 1 0 0
+            // 4 0 0 0 2 2 2 2 0
+            // 5 0 0 0 0 2 0 0 0
+            // 6 0 0 0 0 0 0 0 0
+            // 7 0 0 0 0 0 0 0 0
+
+            // Act
+            var actual = spel.DoeZet(2, 4);
+
+            // Assert
+            Assert.IsTrue(actual);
+            spel.Bord[3, 4] = Kleur.Zwart;
+            spel.Bord[3, 5] = Kleur.Zwart;
+            spel.Bord[2, 6] = Kleur.Geen;
+        }
+
         [Test]
         public void Pas_ZwartAanZetGeenZetMogelijk_ReturnTrueEnWisselBeurt()
         {
