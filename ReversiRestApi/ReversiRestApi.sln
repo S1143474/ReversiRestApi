@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reversi.API.Infrastructure"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reversi.API", "..\Reversi.API\Reversi.API.csproj", "{8630F5D3-B042-4A2A-8ACA-76F8833F6079}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reversi.API.LoadTesting", "..\Reversi.API.LoadTesting\Reversi.API.LoadTesting.csproj", "{84C6AE81-D149-47DB-B8F9-F41AEA237256}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reversi.API.LoadTesting", "..\Reversi.API.LoadTesting\Reversi.API.LoadTesting.csproj", "{84C6AE81-D149-47DB-B8F9-F41AEA237256}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
