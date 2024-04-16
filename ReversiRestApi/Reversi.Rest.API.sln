@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReversiRestApi", "ReversiRestApi.csproj", "{B8D91BFF-17ED-4AC4-BEC0-9157C350A9E1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReversiRestApiNUnitTest", "..\ReversiRestAPINUnitTest\ReversiRestApiNUnitTest.csproj", "{7A354121-97CE-4539-818D-74C7B9C350EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reversi.API.UnitTests", "..\ReversiRestAPINUnitTest\Reversi.API.UnitTests.csproj", "{7A354121-97CE-4539-818D-74C7B9C350EB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reversi.API.Domain", "..\Reversi.API.Domain\Reversi.API.Domain.csproj", "{FB34C344-1AC0-4069-B6D0-64A1C9B3872F}"
 EndProject
