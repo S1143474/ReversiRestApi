@@ -21,7 +21,7 @@ namespace Reversi.API.Application.Common
 
         bool Pas(Spel spel);
 
-        bool ZetMogelijk(Spel spel, int rijZet, int kolomZet);
+        bool ZetMogelijk(ref Spel spel, int rijZet, int kolomZet);
 
         bool DoeZet(ref Spel spel, int rijZet, int kolomZet, out List<CoordsModel> flippedResult);
 
@@ -31,7 +31,7 @@ namespace Reversi.API.Application.Common
 
         /* List<CoordsDTO> FlipStonesBetween(Spel spel, int startY, int startX); // TODO: Something with CellsToFlip List*/
 
-        bool CheckMovePossible(Spel spel, int rijZet, int kolomZet, int y, int x);
+        bool CheckMovePossible(ref Spel spel, int rijZet, int kolomZet, int y, int x);
 
         bool CheckOutOfBounds(int bound);
 

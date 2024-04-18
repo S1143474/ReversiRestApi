@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -149,33 +150,37 @@ namespace Reversi.API.Application.Spellen.Commands.InProcessSpelMove
                 bool moveResult = _spelMovement.DoeZet(ref spel, request.Y, request.X, out flippedResult);
 
                 if (moveResult)
+                {
                     _logger.LogInformation(
                         $"Request with id: {_requestContext.RequestId}, user with token: {request.SpelerToken} has executed his turn.");
+                    if (flippedResult != null)
+                    {
+                        var intArrBord = spel.Bord.MapStringBordTo2DIntArr();
+                        foreach (var chr in flippedResult)
+                        {
+                            intArrBord[chr.Y, chr.X] = currentPlayer;
+                        }
+                        spel.Bord = intArrBord.MapIntArrToBase64String();
+
+                        if (spel.AandeBeurt == 1)
+                        {
+                            spel.AOFFBySpeler1 += (flippedResult.Count - 1);
+                            //spel.AOFFBySpeler2 -= (flippedResult.Count - 1);
+                        }
+                        else
+                        {
+                            spel.AOFFBySpeler2 += (flippedResult.Count - 1);
+                            //spel.AOFFBySpeler1 -= (flippedResult.Count - 1);
+                        }
+
+                    }
+                }
                 else
                     _logger.LogInformation(
                         $"Request with id: {_requestContext.RequestId}, user with token: {request.SpelerToken} tried to execute but couldn't.");
 
                 // Check the flipped fiches and save the spel bord accordingly.
-                if (flippedResult != null)
-                {
-                    var intArrBord = spel.Bord.MapStringBordTo2DIntArr();
-                    foreach (var chr in flippedResult)
-                    {
-                        intArrBord[chr.Y, chr.X] = currentPlayer;
-                    }
-                    spel.Bord = intArrBord.MapIntArrToBase64String();
-
-                    if (spel.AandeBeurt == 1)
-                    {
-                        spel.AOFFBySpeler1 += flippedResult.Count;
-                        spel.AOFFBySpeler2 -= (flippedResult.Count - 1);
-                    } else
-                    {
-                        spel.AOFFBySpeler2 += flippedResult.Count;
-                        spel.AOFFBySpeler1 -= (flippedResult.Count - 1);
-                    }
-
-                }
+                
 
                 
                 _repository.Spel.Update(spel);
@@ -209,11 +214,29 @@ namespace Reversi.API.Application.Spellen.Commands.InProcessSpelMove
             {
                 _logger.LogInformation($"Request with id: {_requestContext.RequestId}, spel with token: {spel.Token} has finished.");
 
+                int player1score = 0;
+                int player2score = 0;
+
+                var bord = spel.Bord.MapStringBordTo2DIntArr();
+                for (int i = 0; i < bord.GetLength(0); i++)
+                {
+                    for (int j = 0; j < bord.GetLength(1); j++)
+                    {
+                        if (bord[i, j] == 2)
+                            player1score++;
+
+                        if (bord[i, j] == 1)
+                            player2score++;
+                    }
+                }
+
                 spel.FinishedAt = spel.UpdatedAt = DateTime.Now;
                 spel.AmountOfUpdates++;
                 spel.UpdatedBy = request.SpelerToken ?? Guid.Empty;
-                spel.WonBy = spel.AandeBeurt == 1 ? spel.Speler2Token : spel.Speler1Token;
-                spel.LostBy = spel.AandeBeurt == 1 ? spel.Speler1Token : spel.Speler2Token;
+                spel.WonBy = player2score > player1score ? spel.Speler2Token : spel.Speler1Token;
+                spel.LostBy = player1score > player2score ? spel.Speler2Token : spel.Speler1Token;
+                spel.AOFFBySpeler1 = player1score;
+                spel.AOFFBySpeler2 = player2score;
                 _repository.Spel.Update(spel);
                 await _repository.SaveAsync();
                 return new FinishedModel

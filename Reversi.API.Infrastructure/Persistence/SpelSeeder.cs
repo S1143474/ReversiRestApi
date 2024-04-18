@@ -28,12 +28,12 @@ namespace Reversi.API.Infrastructure.Persistence
 
         public void Seed()
         {
-            foreach (var item in Spellen)
+            /*foreach (var item in Spellen)
             {
                 _context.Spellen.Add(item);
             }
 
-            _context.SaveChanges();
+            _context.SaveChanges();*/
         }
 
         private static List<Spel> Spellen = new List<Spel>
