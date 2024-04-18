@@ -18,7 +18,7 @@ namespace Reversi.API.Domain.Entities
 
 
         [Column("Description")]
-        [StringLength(100, MinimumLength = 3, ErrorMessage = "")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "De spel omschrijving kan maximaal 100 en moet minimaal 3 tekens bevatten.")]
         public string Omschrijving { get; set; }
 
 

@@ -59,7 +59,7 @@ namespace Reversi.API.Application.Common.Mappings
         /// </summary>
         /// <param name="prevBord"></param>
         /// <returns></returns>
-        private static Kleur[,] FromIntToKleurArray(int[,] prevBord)
+        public static Kleur[,] FromIntToKleurArray(int[,] prevBord)
         {
             Kleur[,] result = new Kleur[prevBord.GetLength(0), prevBord.GetLength(1)];
 

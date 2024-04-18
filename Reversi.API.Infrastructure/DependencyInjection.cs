@@ -7,8 +7,6 @@ using Reversi.API.Infrastructure.Persistence;
 using Reversi.API.Infrastructure.Repository;
 using Reversi.API.Infrastructure.Services;
 
-/*using Reversi.API.Infrastructure.Services;
-*/
 namespace Reversi.API.Infrastructure
 {
     public static class DependencyInjection
