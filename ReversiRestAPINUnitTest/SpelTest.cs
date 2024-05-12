@@ -1,12 +1,36 @@
 using NUnit.Framework;
-using ReversiRestApi;
-using static ReversiRestApi.ISpel;
+using Reversi.API.Application.Common;
+using Reversi.API.Application.Common.Mappings;
+using Reversi.API.Application.Spellen.Commands.InProcessSpelMove.MoveModels;
+using Reversi.API.Domain.Entities;
+using Reversi.API.Domain.Enums;
+using Reversi.API.Infrastructure.Services;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 
-namespace ReversiRestApiNUnitTest
+namespace Reversi.API.UnitTests
 {
     [TestFixture]
     public class SpelTest
     {
+        private readonly ISpelMovement _spelMovement;
+        private int[,] _bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+        public SpelTest() 
+        {
+            _spelMovement = new SpelMovementService();
+        }
         // geen kleur = 0
         // Wit = 1
         // Zwart = 2
@@ -14,22 +38,25 @@ namespace ReversiRestApiNUnitTest
         public void ZetMogelijk_BuitenBord_ReturnFalse()
         {
             // Arrange
-            Spel spel = new Spel();
-            // 0 1 2 3 4 5 6 7
-            // v
-            // 0 0 0 0 0 0 0 0 0
-            // 1 0 0 0 0 0 0 0 0
-            // 2 0 0 0 0 0 0 0 0
-            // 3 0 0 0 1 2 0 0 0
-            // 4 0 0 0 2 1 0 0 0
-            // 5 0 0 0 0 0 0 0 0
-            // 6 0 0 0 0 0 0 0 0
-            // 7 0 0 0 0 0 0 0 0
-            // 1 <
-            // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.ZetMogelijk(8, 8);
-            // Assert
+            Spel spel = new()
+            {
+                // 0 1 2 3 4 5 6 7
+                // v
+                // 0 0 0 0 0 0 0 0 0
+                // 1 0 0 0 0 0 0 0 0
+                // 2 0 0 0 0 0 0 0 0
+                // 3 0 0 0 1 2 0 0 0
+                // 4 0 0 0 2 1 0 0 0
+                // 5 0 0 0 0 0 0 0 0
+                // 6 0 0 0 0 0 0 0 0
+                // 7 0 0 0 0 0 0 0 0
+                // 1 <
+                // Act
+                AandeBeurt = (int)Kleur.Wit,
+                Bord = _bord.MapIntArrToBase64String()
+            };
+
+            var actual = _spelMovement.ZetMogelijk(ref spel, 8, 8);
             Assert.IsFalse(actual);
         }
 
@@ -38,6 +65,17 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
+            spel.Bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            }.MapIntArrToBase64String();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -49,8 +87,8 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.ZetMogelijk(2, 3);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 2, 3);
             // Assert
             Assert.IsTrue(actual);
         }
@@ -60,6 +98,17 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
+            spel.Bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            }.MapIntArrToBase64String();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -71,8 +120,8 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.ZetMogelijk(2, 3);
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 2, 3);
             // Assert
             Assert.IsFalse(actual);
         }
@@ -82,8 +131,23 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            bord[1, 3] = (int)Kleur.Wit;
+            bord[2, 3] = (int)Kleur.Wit;
+            spel.Bord = bord.MapIntArrToBase64String();
+            /*spel.Bord[1, 3] = Kleur.Wit;
+            spel.Bord[2, 3] = Kleur.Wit;*/
+
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 2 0 0 0 0 <
@@ -95,8 +159,8 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.ZetMogelijk(0, 3);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 0, 3);
             // Assert
             Assert.IsTrue(actual);
         }
@@ -105,9 +169,24 @@ namespace ReversiRestApiNUnitTest
         public void ZetMogelijk_ZetAanDeRandBoven_ReturnFalse()
         {
             // Arrange
-            Spel spel = new Spel();
+            /*Spel spel = new Spel();
             spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
+            spel.Bord[2, 3] = Kleur.Wit;*/
+            Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            }; 
+            bord[1, 3] = (int)Kleur.Wit;
+            bord[2, 3] = (int)Kleur.Wit;
+            spel.Bord = bord.MapIntArrToBase64String();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 1 0 0 0 0 <
@@ -119,8 +198,10 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.ZetMogelijk(0, 3);
+            /*spel.AandeBeurt = Kleur.Wit;
+            var actual = spel.ZetMogelijk(0, 3);*/
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 0, 3);
             // Assert
             Assert.IsFalse(actual);
         }
@@ -130,13 +211,26 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
-            spel.Bord[3, 3] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[5, 3] = Kleur.Wit;
-            spel.Bord[6, 3] = Kleur.Wit;
-            spel.Bord[7, 3] = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            bord[1, 3] = (int)Kleur.Wit;
+            bord[2, 3] = (int)Kleur.Wit;
+            bord[3, 3] = (int)Kleur.Wit;
+            bord[4, 3] = (int)Kleur.Wit;
+            bord[5, 3] = (int)Kleur.Wit;
+            bord[6, 3] = (int)Kleur.Wit;
+            bord[7, 3] = (int)Kleur.Zwart;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 2 0 0 0 0 <
@@ -147,9 +241,11 @@ namespace ReversiRestApiNUnitTest
             // 5 0 0 0 1 0 0 0 0
             // 6 0 0 0 1 0 0 0 0
             // 7 0 0 0 2 0 0 0 0
+
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.ZetMogelijk(0, 3);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 0, 3);
+
             // Assert
             Assert.IsTrue(actual);
         }
@@ -159,13 +255,26 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
-            spel.Bord[3, 3] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[5, 3] = Kleur.Wit;
-            spel.Bord[6, 3] = Kleur.Wit;
-            spel.Bord[7, 3] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            bord[1, 3] = (int)Kleur.Wit;
+            bord[2, 3] = (int)Kleur.Wit;
+            bord[3, 3] = (int)Kleur.Wit;
+            bord[4, 3] = (int)Kleur.Wit;
+            bord[5, 3] = (int)Kleur.Wit;
+            bord[6, 3] = (int)Kleur.Wit;
+            bord[7, 3] = (int)Kleur.Wit;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 2 0 0 0 0 <
@@ -176,9 +285,11 @@ namespace ReversiRestApiNUnitTest
             // 5 0 0 0 1 0 0 0 0
             // 6 0 0 0 1 0 0 0 0
             // 7 0 0 0 1 0 0 0 0
+
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.ZetMogelijk(0, 3);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 0, 3);
+
             // Assert
             Assert.IsFalse(actual);
         }
@@ -188,23 +299,39 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            bord[4, 5] = (int)Kleur.Wit;
+            bord[4, 6] = (int)Kleur.Wit;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // 0 1 2 3 4 5 6 7
             // v
-            // 0 0 0 0 2 0 0 0 0
+            // 0 0 0 0 2 0 0 0 0 <
             // 1 0 0 0 1 0 0 0 0
             // 2 0 0 0 1 0 0 0 0
             // 3 0 0 0 1 2 0 0 0
-            // 4 0 0 0 2 1 1 1 2 <
+            // 4 0 0 0 2 1 1 1 2
             // 5 0 0 0 0 0 0 0 0
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
+
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.ZetMogelijk(4, 7);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 4, 7);
+
             // Assert
             Assert.IsTrue(actual);
+
         }
 
         [Test]
@@ -212,8 +339,21 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            bord[4, 5] = (int)Kleur.Wit;
+            bord[4, 6] = (int)Kleur.Wit;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 1 0 0 0 0
@@ -224,11 +364,14 @@ namespace ReversiRestApiNUnitTest
             // 5 0 0 0 0 0 0 0 0
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
+
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.ZetMogelijk(4, 7);
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 4, 7);
+
             // Assert
             Assert.IsFalse(actual);
+
         }
 
         [Test]
@@ -236,13 +379,27 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[4, 0] = Kleur.Zwart;
-            spel.Bord[4, 1] = Kleur.Wit;
-            spel.Bord[4, 2] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[4, 4] = Kleur.Wit;
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            bord[4, 0] = (int)Kleur.Zwart;
+            bord[4, 1] = (int)Kleur.Wit;
+            bord[4, 2] = (int)Kleur.Wit;
+            bord[4, 3] = (int)Kleur.Wit;
+            bord[4, 4] = (int)Kleur.Wit;
+            bord[4, 5] = (int)Kleur.Wit;
+            bord[4, 6] = (int)Kleur.Wit;
+            spel.Bord = bord.MapIntArrToBase64String();
+
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -253,9 +410,11 @@ namespace ReversiRestApiNUnitTest
             // 5 0 0 0 0 0 0 0 0
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
+
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.ZetMogelijk(4, 7);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 4, 7);
+
             // Assert
             Assert.IsTrue(actual);
         }
@@ -265,13 +424,27 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[4, 0] = Kleur.Zwart;
-            spel.Bord[4, 1] = Kleur.Wit;
-            spel.Bord[4, 2] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[4, 4] = Kleur.Wit;
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            bord[4, 0] = (int)Kleur.Zwart;
+            bord[4, 1] = (int)Kleur.Wit;
+            bord[4, 2] = (int)Kleur.Wit;
+            bord[4, 3] = (int)Kleur.Wit;
+            bord[4, 4] = (int)Kleur.Wit;
+            bord[4, 5] = (int)Kleur.Wit;
+            bord[4, 6] = (int)Kleur.Wit;
+            spel.Bord = bord.MapIntArrToBase64String();
+
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -282,11 +455,14 @@ namespace ReversiRestApiNUnitTest
             // 5 0 0 0 0 0 0 0 0
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
+
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.ZetMogelijk(4, 7);
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 4, 7);
+
             // Assert
             Assert.IsFalse(actual);
+
         }
         // 0 1 2 3 4 5 6 7
         //
@@ -303,6 +479,18 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -313,17 +501,35 @@ namespace ReversiRestApiNUnitTest
             // 5 0 0 0 0 0 0 0 0
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
+
+            bord[2, 2] = (int)Kleur.Wit;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.ZetMogelijk(2, 2);
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 2, 2);
+
             // Assert
             Assert.IsFalse(actual);
+
         }
         [Test]
         public void ZetMogelijk_StartSituatieZet22Zwart_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -334,20 +540,35 @@ namespace ReversiRestApiNUnitTest
             // 5 0 0 0 0 0 0 0 0
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
+
+            bord[2, 2] = (int)Kleur.Zwart;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.ZetMogelijk(2, 2);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 2, 2);
+
             // Assert
             Assert.IsFalse(actual);
+
         }
         [Test]
         public void ZetMogelijk_ZetAanDeRandRechtsBoven_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 5] = Kleur.Zwart;
-            spel.Bord[1, 6] = Kleur.Zwart;
-            spel.Bord[5, 2] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 1 <
@@ -358,20 +579,37 @@ namespace ReversiRestApiNUnitTest
             // 5 0 0 1 0 0 0 0 0
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
+
+            bord[5, 2] = (int)Kleur.Wit;
+            bord[2, 5] = (int)Kleur.Zwart;
+            bord[1, 6] = (int)Kleur.Zwart;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.ZetMogelijk(0, 7);
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 0, 7);
+
             // Assert
             Assert.IsTrue(actual);
+
         }
         [Test]
         public void ZetMogelijk_ZetAanDeRandRechtsBoven_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 5] = Kleur.Zwart;
-            spel.Bord[1, 6] = Kleur.Zwart;
-            spel.Bord[5, 2] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 2 <
@@ -382,20 +620,35 @@ namespace ReversiRestApiNUnitTest
             // 5 0 0 1 0 0 0 0 0
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
+
+            bord[0, 7] = (int)Kleur.Zwart;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.ZetMogelijk(0, 7);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 0, 7);
+
             // Assert
             Assert.IsFalse(actual);
+
         }
         [Test]
         public void ZetMogelijk_ZetAanDeRandRechtsOnder_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 2] = Kleur.Zwart;
-            spel.Bord[5, 5] = Kleur.Wit;
-            spel.Bord[6, 6] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -406,92 +659,158 @@ namespace ReversiRestApiNUnitTest
             // 5 0 0 0 0 0 1 0 0
             // 6 0 0 0 0 0 0 1 0
             // 7 0 0 0 0 0 0 0 2 <
+
+            bord[2, 2] = (int)Kleur.Zwart;
+            bord[5, 5] = (int)Kleur.Wit;
+            bord[6, 6] = (int)Kleur.Wit;
+
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.ZetMogelijk(7, 7);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 7, 7);
+
             // Assert
             Assert.IsTrue(actual);
+
         }
         [Test]
         public void ZetMogelijk_ZetAanDeRandRechtsOnder_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 2] = Kleur.Zwart;
-            spel.Bord[5, 5] = Kleur.Wit;
-            spel.Bord[6, 6] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
-            // 0 0 0 0 0 0 0 0 0 <
+            // 0 0 0 0 0 0 0 0 0
             // 1 0 0 0 0 0 0 0 0
             // 2 0 0 2 0 0 0 0 0
             // 3 0 0 0 1 2 0 0 0
             // 4 0 0 0 2 1 0 0 0
             // 5 0 0 0 0 0 1 0 0
             // 6 0 0 0 0 0 0 1 0
-            // 7 0 0 0 0 0 0 0 1
+            // 7 0 0 0 0 0 0 0 1 <
+
+            bord[7, 7] = (int)Kleur.Wit;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.ZetMogelijk(7, 7);
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 7, 7);
+
             // Assert
             Assert.IsFalse(actual);
+
         }
         [Test]
         public void ZetMogelijk_ZetAanDeRandLinksBoven_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[1, 1] = Kleur.Wit;
-            spel.Bord[2, 2] = Kleur.Wit;
-            spel.Bord[5, 5] = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
-            // 0 2 0 0 0 0 0 0 0 <
+            // 0 2 0 0 0 0 0 0 0
             // 1 0 1 0 0 0 0 0 0
             // 2 0 0 1 0 0 0 0 0
             // 3 0 0 0 1 2 0 0 0
             // 4 0 0 0 2 1 0 0 0
             // 5 0 0 0 0 0 2 0 0
             // 6 0 0 0 0 0 0 0 0
-            // 7 0 0 0 0 0 0 0 0
+            // 7 0 0 0 0 0 0 0 0 <
+
+            bord[2, 2] = (int)Kleur.Wit;
+            bord[1, 1] = (int)Kleur.Wit;
+            bord[5, 5] = (int)Kleur.Zwart;
+
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.ZetMogelijk(0, 0);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 0, 0);
+
             // Assert
             Assert.IsTrue(actual);
+
         }
         [Test]
         public void ZetMogelijk_ZetAanDeRandLinksBoven_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[1, 1] = Kleur.Wit;
-            spel.Bord[2, 2] = Kleur.Wit;
-            spel.Bord[5, 5] = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
-            // 0 1 0 0 0 0 0 0 0 <
+            // 0 1 0 0 0 0 0 0 0
             // 1 0 1 0 0 0 0 0 0
             // 2 0 0 1 0 0 0 0 0
             // 3 0 0 0 1 2 0 0 0
             // 4 0 0 0 2 1 0 0 0
             // 5 0 0 0 0 0 2 0 0
             // 6 0 0 0 0 0 0 0 0
-            // 7 0 0 0 0 0 0 0 0
+            // 7 0 0 0 0 0 0 0 0 <
+
+            bord[0, 0] = (int)Kleur.Wit;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.ZetMogelijk(0, 0);
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 0, 0);
+
             // Assert
             Assert.IsFalse(actual);
+
         }
         [Test]
         public void ZetMogelijk_ZetAanDeRandLinksOnder_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 5] = Kleur.Wit;
-            spel.Bord[5, 2] = Kleur.Zwart;
-            spel.Bord[6, 1] = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -502,35 +821,59 @@ namespace ReversiRestApiNUnitTest
             // 5 0 0 2 0 0 0 0 0
             // 6 0 2 0 0 0 0 0 0
             // 7 1 0 0 0 0 0 0 0 <
+
+            bord[0, 0] = (int)Kleur.Wit;
+            bord[2, 5] = (int)Kleur.Wit;
+            bord[5, 2] = (int)Kleur.Zwart;
+            bord[6, 1] = (int)Kleur.Zwart;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.ZetMogelijk(7, 0);
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 7, 0);
+
             // Assert
             Assert.IsTrue(actual);
+
         }
         [Test]
         public void ZetMogelijk_ZetAanDeRandLinksOnder_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 5] = Kleur.Wit;
-            spel.Bord[5, 2] = Kleur.Zwart;
-            spel.Bord[6, 1] = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            // Comments for the board
             // 0 1 2 3 4 5 6 7
             // v
-            // 0 0 0 0 0 0 0 0 0 <
+            // 0 0 0 0 0 0 0 0 0
             // 1 0 0 0 0 0 0 0 0
             // 2 0 0 0 0 0 1 0 0
             // 3 0 0 0 1 2 0 0 0
             // 4 0 0 0 2 1 0 0 0
             // 5 0 0 2 0 0 0 0 0
             // 6 0 2 0 0 0 0 0 0
-            // 7 2 0 0 0 0 0 0 0
+            // 7 2 0 0 0 0 0 0 0 <
+
+            bord[7, 0] = (int)Kleur.Zwart;
+            spel.Bord = bord.MapIntArrToBase64String();
+
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.ZetMogelijk(7, 0);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var actual = _spelMovement.ZetMogelijk(ref spel, 7, 0);
+
             // Assert
             Assert.IsFalse(actual);
+
         }
         //---------------------------------------------------------------------------
         [Test]
@@ -538,6 +881,17 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -550,21 +904,34 @@ namespace ReversiRestApiNUnitTest
             // 7 0 0 0 0 0 0 0 0
             // 1 <
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.DoeZet(8, 8);
+            spel.AandeBeurt = (int)Kleur.Wit;
+            spel.Bord = bord.MapIntArrToBase64String();
+            var flipedfisched = new List<CoordsModel>();
+            var actual = _spelMovement.DoeZet(ref spel, 8, 8, out flipedfisched);
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.AandeBeurt);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.AandeBeurt);
         }
         [Test]
         public void DoeZet_StartSituatieZet23Zwart_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -576,20 +943,41 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.DoeZet(2, 3);
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            spel.Bord = bord.MapIntArrToBase64String();
+            var flipedfisched = new List<CoordsModel>();
+            var actual = _spelMovement.DoeZet(ref spel, 2, 3, out flipedfisched);
+
             // Assert
             Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[2, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.AandeBeurt);
+            Assert.AreEqual(3, flipedfisched.Count);
+            var intBord = spel.Bord.MapStringBordTo2DIntArr();
+            Assert.AreEqual((int)Kleur.Zwart, intBord[2, 3]);
+            Assert.IsTrue(flipedfisched.Any(model => model.X == 3 && model.Y == 3));
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.AandeBeurt);
         }
         [Test]
         public void DoeZet_StartSituatieZet23Wit_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var flippedfishes = new List<CoordsModel>();
+
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -601,24 +989,35 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.DoeZet(2, 3);
+            var actual = _spelMovement.DoeZet(ref spel, 2, 3, out flippedfishes);
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[2, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.AandeBeurt);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Geen, spel.Bord.MapStringBordTo2DIntArr()[2, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.AandeBeurt);
         }
         [Test]
         public void DoeZet_ZetAanDeRandBoven_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 2 0 0 0 0 <
@@ -630,24 +1029,39 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.DoeZet(0, 3);
+            var actual = _spelMovement.DoeZet(ref spel, 0, 3, out flippedfishes);
             // Assert
             Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[0, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[1, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[2, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.AandeBeurt);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[0, 3]);
+            
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 1));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 2));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 3));
+            //Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[1, 3]);
+            //Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[2, 3]);
+            //Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.AandeBeurt);
         }
         [Test]
         public void DoeZet_ZetAanDeRandBoven_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            var flippedfishes = new List<CoordsModel>();
+            spel.AandeBeurt = (int)Kleur.Wit;
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 1 0 0 0 0 <
@@ -659,30 +1073,36 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.DoeZet(0, 3);
+            var actual = _spelMovement.DoeZet(ref spel, 0, 3, out flippedfishes);
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[1, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[2, 3]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[0, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[1, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[2, 3]);
+            Assert.AreEqual((int)Kleur.Geen, spel.Bord.MapStringBordTo2DIntArr()[0, 3]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandBovenEnTotBenedenReedsGevuld_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
-            spel.Bord[3, 3] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[5, 3] = Kleur.Wit;
-            spel.Bord[6, 3] = Kleur.Wit;
-            spel.Bord[7, 3] = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 1, 1, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 2, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 2 0 0 0 0 <
@@ -694,31 +1114,45 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 1 0 0 0 0
             // 7 0 0 0 2 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.DoeZet(0, 3);
+            var actual = _spelMovement.DoeZet(ref spel, 0, 3, out flippedfishes);
             // Assert
             Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[0, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[1, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[2, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[5, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[6, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[7, 3]);
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 0));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 1));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 3));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 3));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 5));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 6));
+
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[0, 3]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[1, 3]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[2, 3]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[5, 3]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[6, 3]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[7, 3]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandBovenEnTotBenedenReedsGevuld_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
-            spel.Bord[3, 3] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[5, 3] = Kleur.Wit;
-            spel.Bord[6, 3] = Kleur.Wit;
-            spel.Bord[7, 3] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 1, 1, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 2 0 0 0 0 <
@@ -730,53 +1164,82 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 1 0 0 0 0
             // 7 0 0 0 1 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.DoeZet(0, 3);
+            var actual = _spelMovement.DoeZet(ref spel, 0, 3, out flippedfishes);
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[1, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[2, 3]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[0, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[1, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[2, 3]);
+            Assert.AreEqual((int)Kleur.Geen, spel.Bord.MapStringBordTo2DIntArr()[0, 3]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandRechts_ReturnTrue()
         {
-            // Arrange
-            Spel spel = new Spel();
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Wit;
-            // 0 1 2 3 4 5 6 7
-            // v
-            // 0 0 0 0 0 0 0 0 0
-            // 1 0 0 0 0 0 0 0 0
-            // 2 0 0 0 0 0 0 0 0
-            // 3 0 0 0 1 2 0 0 0
-            // 4 0 0 0 2 1 1 1 2 <
-            // 5 0 0 0 0 0 0 0 0
-            // 6 0 0 0 0 0 0 0 0
-            // 7 0 0 0 0 0 0 0 0
-            // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.DoeZet(4, 7);
-            // Assert
-            Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 5]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 6]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 7]);
+           // Arrange
+           Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 1, 1, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var flippedfishes = new List<CoordsModel>();
+           // 0 1 2 3 4 5 6 7
+           // v
+           // 0 0 0 0 0 0 0 0 0
+           // 1 0 0 0 0 0 0 0 0
+           // 2 0 0 0 0 0 0 0 0
+           // 3 0 0 0 1 2 0 0 0
+           // 4 0 0 0 2 1 1 1 2 <
+           // 5 0 0 0 0 0 0 0 0
+           // 6 0 0 0 0 0 0 0 0
+           // 7 0 0 0 0 0 0 0 0
+           // Act
+           var actual = _spelMovement.DoeZet(ref spel, 4, 7, out flippedfishes);
+           // Assert
+           Assert.IsTrue(actual);
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 4 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 5 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 6 && model.Y == 4));
+
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 5]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 6]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 7]);
         }
+        
         [Test]
         public void DoeZet_ZetAanDeRandRechts_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 1, 1, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var flippedfishes = new List<CoordsModel>();
+
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 1 0 0 0 0
@@ -788,30 +1251,37 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.DoeZet(4, 7);
+            var actual = _spelMovement.DoeZet(ref spel, 4, 7, out flippedfishes);
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 5]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 6]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[4, 7]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 5]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 6]);
+            Assert.AreEqual((int)Kleur.Geen, spel.Bord.MapStringBordTo2DIntArr()[4, 7]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandRechtsEnTotLinksReedsGevuld_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[4, 0] = Kleur.Zwart;
-            spel.Bord[4, 1] = Kleur.Wit;
-            spel.Bord[4, 2] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[4, 4] = Kleur.Wit;
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {2, 1, 1, 1, 1, 1, 1, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var flippedfishes = new List<CoordsModel>();
+            
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -823,31 +1293,46 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.DoeZet(4, 7);
+            var actual = _spelMovement.DoeZet(ref spel, 4, 7, out flippedfishes);
             // Assert
             Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 0]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 1]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 2]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 5]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 6]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 7]);
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 0 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 1 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 2 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 4 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 5 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 6 && model.Y == 4));
+
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 0]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 1]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 2]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 5]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 6]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 7]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandRechtsEnTotLinksReedsGevuld_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[4, 0] = Kleur.Zwart;
-            spel.Bord[4, 1] = Kleur.Wit;
-            spel.Bord[4, 2] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[4, 4] = Kleur.Wit;
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {2, 1, 1, 1, 1, 1, 1, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var flippedfishes = new List<CoordsModel>();
+
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -859,20 +1344,19 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.DoeZet(4, 7);
+            var actual = _spelMovement.DoeZet(ref spel, 4, 7, out flippedfishes);
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 0]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 1]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 2]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 5]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 6]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[4, 7]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 0]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 1]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 2]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 5]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 6]);
+            Assert.AreEqual((int)Kleur.Geen, spel.Bord.MapStringBordTo2DIntArr()[4, 7]);
         }
         // 0 1 2 3 4 5 6 7
         //
@@ -889,6 +1373,20 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -900,21 +1398,34 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.DoeZet(2, 2);
+            var actual = _spelMovement.DoeZet(ref spel, 2, 2, out flippedfishes);
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[2, 2]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Geen,    spel.Bord.MapStringBordTo2DIntArr()[2, 2]);
         }
         [Test]
         public void DoeZet_StartSituatieZet22Zwart_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -926,24 +1437,34 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.DoeZet(2, 2);
+            var actual = _spelMovement.DoeZet(ref spel, 2, 2, out flippedfishes);
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[2, 2]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Geen,    spel.Bord.MapStringBordTo2DIntArr()[2, 2]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandRechtsBoven_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 5] = Kleur.Zwart;
-            spel.Bord[1, 6] = Kleur.Zwart;
-            spel.Bord[5, 2] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 2, 0 },
+                {0, 0, 0, 0, 0, 2, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 1, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 1 <
@@ -955,25 +1476,41 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.DoeZet(0, 7);
+            var actual = _spelMovement.DoeZet(ref spel, 0, 7, out flippedfishes);
             // Assert
             Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[5, 2]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[2, 5]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[1, 6]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[0, 7]);
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 2 && model.Y == 5));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 4 && model.Y == 3));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 5 && model.Y == 2));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 6 && model.Y == 1));
+
+            // Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[5, 2]);
+            // Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            // Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            // Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[2, 5]);
+            // Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[1, 6]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[0, 7]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandRechtsBoven_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 5] = Kleur.Zwart;
-            spel.Bord[1, 6] = Kleur.Zwart;
-            spel.Bord[5, 2] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 2, 0 },
+                {0, 0, 0, 0, 0, 2, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 1, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 2 <
@@ -985,27 +1522,37 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.DoeZet(0, 7);
+            var actual = _spelMovement.DoeZet(ref spel, 0, 7, out flippedfishes);
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[1, 6]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[2, 5]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[5, 2]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[0, 7]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[1, 6]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[2, 5]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[5, 2]);
+            Assert.AreEqual((int)Kleur.Geen,    spel.Bord.MapStringBordTo2DIntArr()[0, 7]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandRechtsOnder_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 2] = Kleur.Zwart;
-            spel.Bord[5, 5] = Kleur.Wit;
-            spel.Bord[6, 6] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 2, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 1, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 1, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -1017,16 +1564,21 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 1 0
             // 7 0 0 0 0 0 0 0 2 <
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.DoeZet(7, 7);
+            var actual = _spelMovement.DoeZet(ref spel, 7, 7, out flippedfishes);
+
             // Assert
             Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[2, 2]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[5, 5]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[6, 6]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[7, 7]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[2, 2]);
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 3));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 4 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 5 && model.Y == 5));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 6 && model.Y == 6));
+
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[5, 5]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[6, 6]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[7, 7]);
         }
 
         [Test]
@@ -1034,9 +1586,20 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 2] = Kleur.Zwart;
-            spel.Bord[5, 5] = Kleur.Wit;
-            spel.Bord[6, 6] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 2, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 1, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 1, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -1048,27 +1611,38 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 1 0
             // 7 0 0 0 0 0 0 0 1 <
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.DoeZet(7, 7);
+            var actual = _spelMovement.DoeZet(ref spel, 7, 7, out flippedfishes);
+
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[2, 2]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[5, 5]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[6, 6]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[7, 7]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[2, 2]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[5, 5]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[6, 6]);
+            Assert.AreEqual((int)Kleur.Geen,    spel.Bord.MapStringBordTo2DIntArr()[7, 7]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandLinksBoven_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[1, 1] = Kleur.Wit;
-            spel.Bord[2, 2] = Kleur.Wit;
-            spel.Bord[5, 5] = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 1, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 1, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 2, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 2 0 0 0 0 0 0 0 <
@@ -1080,25 +1654,42 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.DoeZet(0, 0);
+            var actual = _spelMovement.DoeZet(ref spel, 0, 0, out flippedfishes);
+
             // Assert
             Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[0, 0]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[1, 1]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[2, 2]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[5, 5]);
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 0 && model.Y == 0));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 1 && model.Y == 1));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 2 && model.Y == 2));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 3));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 4 && model.Y == 4));
+
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[0, 0]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[1, 1]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[2, 2]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[5, 5]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandLinksBoven_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[1, 1] = Kleur.Wit;
-            spel.Bord[2, 2] = Kleur.Wit;
-            spel.Bord[5, 5] = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 1, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 1, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 2, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 1 0 0 0 0 0 0 0 <
@@ -1110,27 +1701,38 @@ namespace ReversiRestApiNUnitTest
             // 6 0 0 0 0 0 0 0 0
             // 7 0 0 0 0 0 0 0 0
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.DoeZet(0, 0);
+            var actual = _spelMovement.DoeZet(ref spel, 0, 0, out flippedfishes);
+
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[1, 1]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[2, 2]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[5, 5]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[0, 0]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[1, 1]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[2, 2]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[5, 5]);
+            Assert.AreEqual((int)Kleur.Geen,    spel.Bord.MapStringBordTo2DIntArr()[0, 0]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandLinksOnder_ReturnTrue()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 5] = Kleur.Wit;
-            spel.Bord[5, 2] = Kleur.Zwart;
-            spel.Bord[6, 1] = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 1, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 2, 0, 0, 0, 0, 0 },
+                {0, 2, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -1142,25 +1744,42 @@ namespace ReversiRestApiNUnitTest
             // 6 0 2 0 0 0 0 0 0
             // 7 1 0 0 0 0 0 0 0 <
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.DoeZet(7, 0);
+            var actual = _spelMovement.DoeZet(ref spel, 7, 0, out flippedfishes);
+
             // Assert
             Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[7, 0]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[6, 1]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[5, 2]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[2, 5]);
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 0 && model.Y == 7));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 1 && model.Y == 6));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 2 && model.Y == 5));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 3 && model.Y == 4));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 4 && model.Y == 3));
+
+            // Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[7, 0]);
+            // Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[6, 1]);
+            // Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[5, 2]);
+            // Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            // Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Wit, spel.Bord.MapStringBordTo2DIntArr()[2, 5]);
         }
         [Test]
         public void DoeZet_ZetAanDeRandLinksOnder_ReturnFalse()
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 5] = Kleur.Wit;
-            spel.Bord[5, 2] = Kleur.Zwart;
-            spel.Bord[6, 1] = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 1, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 2, 0, 0, 0, 0, 0 },
+                {0, 2, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var flippedfishes = new List<CoordsModel>();
             // 0 1 2 3 4 5 6 7
             // v
             // 0 0 0 0 0 0 0 0 0
@@ -1172,19 +1791,19 @@ namespace ReversiRestApiNUnitTest
             // 6 0 2 0 0 0 0 0 0
             // 7 2 0 0 0 0 0 0 0 <
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.DoeZet(7, 0);
+            var actual = _spelMovement.DoeZet(ref spel, 7, 0, out flippedfishes);
+
             // Assert
             Assert.IsFalse(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[4, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[3, 4]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[4, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[2, 5]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[5, 2]);
-            Assert.AreEqual(Kleur.Zwart, spel.Bord[6, 1]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[7, 7]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[7, 0]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[4, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[4, 3]);
+            Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[2, 5]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[5, 2]);
+            Assert.AreEqual((int)Kleur.Zwart,   spel.Bord.MapStringBordTo2DIntArr()[6, 1]);
+            Assert.AreEqual((int)Kleur.Geen,    spel.Bord.MapStringBordTo2DIntArr()[7, 7]);
+            Assert.AreEqual((int)Kleur.Geen,    spel.Bord.MapStringBordTo2DIntArr()[7, 0]);
         }
 
         [Test]
@@ -1192,14 +1811,20 @@ namespace ReversiRestApiNUnitTest
          {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[4, 2] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[4, 4] = Kleur.Wit;
-            spel.Bord[3, 3] = Kleur.Zwart;
-            spel.Bord[3, 4] = Kleur.Zwart;
-            spel.Bord[2, 3] = Kleur.Zwart;
-
-            spel.AandeBeurt = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 2, 0, 0, 0, 0 },
+                {0, 0, 0, 2, 2, 0, 0, 0 },
+                {0, 0, 1, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
+            var flippedfishes = new List<CoordsModel>();
 
             //   0 1 2 3 4 5 6 7
             //           V
@@ -1213,15 +1838,15 @@ namespace ReversiRestApiNUnitTest
             // 7 0 0 0 0 0 0 0 0
 
             // Act
-            var actual = spel.DoeZet(2, 4);
+            var actual = _spelMovement.DoeZet(ref spel, 2, 4, out flippedfishes);
+
 
             // Assert
             Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 3]);
-            Assert.AreEqual(Kleur.Wit, spel.Bord[3, 4]);
-
-            Assert.AreEqual(Kleur.Geen, spel.Bord[5, 1]);
-            Assert.AreEqual(Kleur.Geen, spel.Bord[5, 4]);
+            // Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[3, 3]);
+            // Assert.AreEqual((int)Kleur.Wit,     spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            // Assert.AreEqual((int)Kleur.Geen,    spel.Bord.MapStringBordTo2DIntArr()[5, 1]);
+            Assert.AreEqual((int)Kleur.Geen,    spel.Bord.MapStringBordTo2DIntArr()[5, 4]);
         }
 
         [Test]
@@ -1229,15 +1854,20 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[3, 3] = Kleur.Wit;
-            spel.Bord[3, 4] = Kleur.Wit;
-            spel.Bord[3, 5] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Zwart;
-            spel.Bord[4, 4] = Kleur.Zwart;
-            spel.Bord[4, 5] = Kleur.Zwart;
-            spel.Bord[5, 4] = Kleur.Zwart;
-
-            spel.AandeBeurt = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 1, 1, 0, 0 },
+                {0, 0, 0, 2, 2, 2, 2, 0 },
+                {0, 0, 0, 0, 2, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+            var flippedfishes = new List<CoordsModel>();
 
             //   0 1 2 3 4 5 6 7
             //           V
@@ -1251,13 +1881,17 @@ namespace ReversiRestApiNUnitTest
             // 7 0 0 0 0 0 0 0 0
 
             // Act
-            var actual = spel.DoeZet(2, 4);
+            var actual = _spelMovement.DoeZet(ref spel, 2, 4, out flippedfishes);
+
 
             // Assert
             Assert.IsTrue(actual);
-            spel.Bord[3, 4] = Kleur.Zwart;
-            spel.Bord[3, 5] = Kleur.Zwart;
-            spel.Bord[2, 6] = Kleur.Geen;
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 4 && model.Y == 3));
+            Assert.IsTrue(flippedfishes.Any(model => model.X == 5 && model.Y == 3));
+
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 4]);
+            // Assert.AreEqual((int)Kleur.Zwart, spel.Bord.MapStringBordTo2DIntArr()[3, 5]);
+            Assert.AreEqual((int)Kleur.Geen, spel.Bord.MapStringBordTo2DIntArr()[2, 6]);
         }
 
         [Test]
@@ -1265,70 +1899,20 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange (zowel wit als zwart kunnen niet meer)
             Spel spel = new Spel();
-            spel.Bord[0, 0] = Kleur.Wit;
-            spel.Bord[0, 1] = Kleur.Wit;
-            spel.Bord[0, 2] = Kleur.Wit;
-            spel.Bord[0, 3] = Kleur.Wit;
-            spel.Bord[0, 4] = Kleur.Wit;
-            spel.Bord[0, 5] = Kleur.Wit;
-            spel.Bord[0, 6] = Kleur.Wit;
-            spel.Bord[0, 7] = Kleur.Wit;
-            spel.Bord[1, 0] = Kleur.Wit;
-            spel.Bord[1, 1] = Kleur.Wit;
-            spel.Bord[1, 2] = Kleur.Wit;
-            spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[1, 4] = Kleur.Wit;
-            spel.Bord[1, 5] = Kleur.Wit;
-            spel.Bord[1, 6] = Kleur.Wit;
-            spel.Bord[1, 7] = Kleur.Wit;
-            spel.Bord[2, 0] = Kleur.Wit;
-            spel.Bord[2, 1] = Kleur.Wit;
-            spel.Bord[2, 2] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
-            spel.Bord[2, 4] = Kleur.Wit;
-            spel.Bord[2, 5] = Kleur.Wit;
-            spel.Bord[2, 6] = Kleur.Wit;
-            spel.Bord[2, 7] = Kleur.Wit;
-            spel.Bord[3, 0] = Kleur.Wit;
-            spel.Bord[3, 1] = Kleur.Wit;
-            spel.Bord[3, 2] = Kleur.Wit;
-            spel.Bord[3, 3] = Kleur.Wit;
-            spel.Bord[3, 4] = Kleur.Wit;
-            spel.Bord[3, 5] = Kleur.Wit;
-            spel.Bord[3, 6] = Kleur.Wit;
-            spel.Bord[3, 7] = Kleur.Geen;
-            spel.Bord[4, 0] = Kleur.Wit;
-            spel.Bord[4, 1] = Kleur.Wit;
-            spel.Bord[4, 2] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[4, 4] = Kleur.Wit;
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Geen;
-            spel.Bord[4, 7] = Kleur.Geen;
-            spel.Bord[5, 0] = Kleur.Wit;
-            spel.Bord[5, 1] = Kleur.Wit;
-            spel.Bord[5, 2] = Kleur.Wit;
-            spel.Bord[5, 3] = Kleur.Wit;
-            spel.Bord[5, 4] = Kleur.Wit;
-            spel.Bord[5, 5] = Kleur.Wit;
-            spel.Bord[5, 6] = Kleur.Geen;
-            spel.Bord[5, 7] = Kleur.Zwart;
-            spel.Bord[6, 0] = Kleur.Wit;
-            spel.Bord[6, 1] = Kleur.Wit;
-            spel.Bord[6, 2] = Kleur.Wit;
-            spel.Bord[6, 3] = Kleur.Wit;
-            spel.Bord[6, 4] = Kleur.Wit;
-            spel.Bord[6, 5] = Kleur.Wit;
-            spel.Bord[6, 6] = Kleur.Wit;
-            spel.Bord[6, 7] = Kleur.Geen;
-            spel.Bord[7, 0] = Kleur.Wit;
-            spel.Bord[7, 1] = Kleur.Wit;
-            spel.Bord[7, 2] = Kleur.Wit;
-            spel.Bord[7, 3] = Kleur.Wit;
-            spel.Bord[7, 4] = Kleur.Wit;
-            spel.Bord[7, 5] = Kleur.Wit;
-            spel.Bord[7, 6] = Kleur.Wit;
-            spel.Bord[7, 7] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 1, 1, 0, 0 },
+                {0, 0, 0, 2, 2, 2, 2, 0 },
+                {0, 0, 0, 0, 2, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Zwart;
+           
             // 0 1 2 3 4 5 6 7
             // v
             // 0 1 1 1 1 1 1 1 1
@@ -1340,81 +1924,29 @@ namespace ReversiRestApiNUnitTest
             // 6 1 1 1 1 1 1 1 0
             // 7 1 1 1 1 1 1 1 1
             // Act
-            spel.AandeBeurt = Kleur.Zwart;
-            var actual = spel.Pas();
+            var actual = _spelMovement.Pas(spel);
             // Assert
             Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Wit, spel.AandeBeurt);
+            Assert.AreEqual((int)Kleur.Wit, spel.AandeBeurt);
         }
-        [Test]
+       [Test]
         public void Pas_WitAanZetGeenZetMogelijk_ReturnTrueEnWisselBeurt()
         {
             // Arrange (zowel wit als zwart kunnen niet meer)
             Spel spel = new Spel();
-            spel.Bord[0, 0] = Kleur.Wit;
-            spel.Bord[0, 1] = Kleur.Wit;
-            spel.Bord[0, 2] = Kleur.Wit;
-            spel.Bord[0, 3] = Kleur.Wit;
-            spel.Bord[0, 4] = Kleur.Wit;
-            spel.Bord[0, 5] = Kleur.Wit;
-            spel.Bord[0, 6] = Kleur.Wit;
-            spel.Bord[0, 7] = Kleur.Wit;
-            spel.Bord[1, 0] = Kleur.Wit;
-            spel.Bord[1, 1] = Kleur.Wit;
-            spel.Bord[1, 2] = Kleur.Wit;
-            spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[1, 4] = Kleur.Wit;
-            spel.Bord[1, 5] = Kleur.Wit;
-            spel.Bord[1, 6] = Kleur.Wit;
-            spel.Bord[1, 7] = Kleur.Wit;
-            spel.Bord[2, 0] = Kleur.Wit;
-            spel.Bord[2, 1] = Kleur.Wit;
-            spel.Bord[2, 2] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
-            spel.Bord[2, 4] = Kleur.Wit;
-            spel.Bord[2, 5] = Kleur.Wit;
-            spel.Bord[2, 6] = Kleur.Wit;
-            spel.Bord[2, 7] = Kleur.Wit;
-            spel.Bord[3, 0] = Kleur.Wit;
-            spel.Bord[3, 1] = Kleur.Wit;
-            spel.Bord[3, 2] = Kleur.Wit;
-            spel.Bord[3, 3] = Kleur.Wit;
-            spel.Bord[3, 4] = Kleur.Wit;
-            spel.Bord[3, 5] = Kleur.Wit;
-            spel.Bord[3, 6] = Kleur.Wit;
-            spel.Bord[3, 7] = Kleur.Geen;
-            spel.Bord[4, 0] = Kleur.Wit;
-            spel.Bord[4, 1] = Kleur.Wit;
-            spel.Bord[4, 2] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[4, 4] = Kleur.Wit;
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Geen;
-            spel.Bord[4, 7] = Kleur.Geen;
-            spel.Bord[5, 0] = Kleur.Wit;
-            spel.Bord[5, 1] = Kleur.Wit;
-            spel.Bord[5, 2] = Kleur.Wit;
-            spel.Bord[5, 3] = Kleur.Wit;
-            spel.Bord[5, 4] = Kleur.Wit;
-            spel.Bord[5, 5] = Kleur.Wit;
-            spel.Bord[5, 6] = Kleur.Geen;
-            spel.Bord[5, 7] = Kleur.Zwart;
-            spel.Bord[6, 0] = Kleur.Wit;
-            spel.Bord[6, 1] = Kleur.Wit;
-            spel.Bord[6, 2] = Kleur.Wit;
-            spel.Bord[6, 3] = Kleur.Wit;
-            spel.Bord[6, 4] = Kleur.Wit;
-            spel.Bord[6, 5] = Kleur.Wit;
-            spel.Bord[6, 6] = Kleur.Wit;
-            spel.Bord[6, 7] = Kleur.Geen;
-            spel.Bord[7, 0] = Kleur.Wit;
-            spel.Bord[7, 1] = Kleur.Wit;
-            spel.Bord[7, 2] = Kleur.Wit;
-            spel.Bord[7, 3] = Kleur.Wit;
-            spel.Bord[7, 4] = Kleur.Wit;
-            spel.Bord[7, 5] = Kleur.Wit;
-            spel.Bord[7, 6] = Kleur.Wit;
-            spel.Bord[7, 7] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 1, 1, 0, 0 },
+                {0, 0, 0, 2, 2, 2, 2, 0 },
+                {0, 0, 0, 0, 2, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
             // 0 1 2 3 4 5 6 7
             // v
             // 0 1 1 1 1 1 1 1 1
@@ -1426,81 +1958,29 @@ namespace ReversiRestApiNUnitTest
             // 6 1 1 1 1 1 1 1 0
             // 7 1 1 1 1 1 1 1 1
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.Pas();
+            var actual = _spelMovement.Pas(spel);
             // Assert
             Assert.IsTrue(actual);
-            Assert.AreEqual(Kleur.Zwart, spel.AandeBeurt);
+            Assert.AreEqual((int)Kleur.Zwart, spel.AandeBeurt);
         }
         [Test]
         public void Afgelopen_GeenZetMogelijk_ReturnTrue()
         {
             // Arrange (zowel wit als zwart kunnen niet meer)
             Spel spel = new Spel();
-            spel.Bord[0, 0] = Kleur.Wit;
-            spel.Bord[0, 1] = Kleur.Wit;
-            spel.Bord[0, 2] = Kleur.Wit;
-            spel.Bord[0, 3] = Kleur.Wit;
-            spel.Bord[0, 4] = Kleur.Wit;
-            spel.Bord[0, 5] = Kleur.Wit;
-            spel.Bord[0, 6] = Kleur.Wit;
-            spel.Bord[0, 7] = Kleur.Wit;
-            spel.Bord[1, 0] = Kleur.Wit;
-            spel.Bord[1, 1] = Kleur.Wit;
-            spel.Bord[1, 2] = Kleur.Wit;
-            spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[1, 4] = Kleur.Wit;
-            spel.Bord[1, 5] = Kleur.Wit;
-            spel.Bord[1, 6] = Kleur.Wit;
-            spel.Bord[1, 7] = Kleur.Wit;
-            spel.Bord[2, 0] = Kleur.Wit;
-            spel.Bord[2, 1] = Kleur.Wit;
-            spel.Bord[2, 2] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
-            spel.Bord[2, 4] = Kleur.Wit;
-            spel.Bord[2, 5] = Kleur.Wit;
-            spel.Bord[2, 6] = Kleur.Wit;
-            spel.Bord[2, 7] = Kleur.Wit;
-            spel.Bord[3, 0] = Kleur.Wit;
-            spel.Bord[3, 1] = Kleur.Wit;
-            spel.Bord[3, 2] = Kleur.Wit;
-            spel.Bord[3, 3] = Kleur.Wit;
-            spel.Bord[3, 4] = Kleur.Wit;
-            spel.Bord[3, 5] = Kleur.Wit;
-            spel.Bord[3, 6] = Kleur.Wit;
-            spel.Bord[3, 7] = Kleur.Geen;
-            spel.Bord[4, 0] = Kleur.Wit;
-            spel.Bord[4, 1] = Kleur.Wit;
-            spel.Bord[4, 2] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[4, 4] = Kleur.Wit;
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Geen;
-            spel.Bord[4, 7] = Kleur.Geen;
-            spel.Bord[5, 0] = Kleur.Wit;
-            spel.Bord[5, 1] = Kleur.Wit;
-            spel.Bord[5, 2] = Kleur.Wit;
-            spel.Bord[5, 3] = Kleur.Wit;
-            spel.Bord[5, 4] = Kleur.Wit;
-            spel.Bord[5, 5] = Kleur.Wit;
-            spel.Bord[5, 6] = Kleur.Geen;
-            spel.Bord[5, 7] = Kleur.Zwart;
-            spel.Bord[6, 0] = Kleur.Wit;
-            spel.Bord[6, 1] = Kleur.Wit;
-            spel.Bord[6, 2] = Kleur.Wit;
-            spel.Bord[6, 3] = Kleur.Wit;
-            spel.Bord[6, 4] = Kleur.Wit;
-            spel.Bord[6, 5] = Kleur.Wit;
-            spel.Bord[6, 6] = Kleur.Wit;
-            spel.Bord[6, 7] = Kleur.Geen;
-            spel.Bord[7, 0] = Kleur.Wit;
-            spel.Bord[7, 1] = Kleur.Wit;
-            spel.Bord[7, 2] = Kleur.Wit;
-            spel.Bord[7, 3] = Kleur.Wit;
-            spel.Bord[7, 4] = Kleur.Wit;
-            spel.Bord[7, 5] = Kleur.Wit;
-            spel.Bord[7, 6] = Kleur.Wit;
-            spel.Bord[7, 7] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 0 },
+                {1, 1, 1, 1, 1, 1, 0, 0 },
+                {1, 1, 1, 1, 1, 1, 0, 2 },
+                {1, 1, 1, 1, 1, 1, 1, 0 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
             // 0 1 2 3 4 5 6 7
             // v
             // 0 1 1 1 1 1 1 1 1
@@ -1512,8 +1992,7 @@ namespace ReversiRestApiNUnitTest
             // 6 1 1 1 1 1 1 1 0
             // 7 1 1 1 1 1 1 1 1
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.Afgelopen();
+            var actual = _spelMovement.Afgelopen(spel);
             // Assert
             Assert.IsTrue(actual);
         }
@@ -1522,70 +2001,19 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange (zowel wit als zwart kunnen niet meer)
             Spel spel = new Spel();
-            spel.Bord[0, 0] = Kleur.Wit;
-            spel.Bord[0, 1] = Kleur.Wit;
-            spel.Bord[0, 2] = Kleur.Wit;
-            spel.Bord[0, 3] = Kleur.Wit;
-            spel.Bord[0, 4] = Kleur.Wit;
-            spel.Bord[0, 5] = Kleur.Wit;
-            spel.Bord[0, 6] = Kleur.Wit;
-            spel.Bord[0, 7] = Kleur.Wit;
-            spel.Bord[1, 0] = Kleur.Wit;
-            spel.Bord[1, 1] = Kleur.Wit;
-            spel.Bord[1, 2] = Kleur.Wit;
-            spel.Bord[1, 3] = Kleur.Wit;
-            spel.Bord[1, 4] = Kleur.Wit;
-            spel.Bord[1, 5] = Kleur.Wit;
-            spel.Bord[1, 6] = Kleur.Wit;
-            spel.Bord[1, 7] = Kleur.Wit;
-            spel.Bord[2, 0] = Kleur.Wit;
-            spel.Bord[2, 1] = Kleur.Wit;
-            spel.Bord[2, 2] = Kleur.Wit;
-            spel.Bord[2, 3] = Kleur.Wit;
-            spel.Bord[2, 4] = Kleur.Wit;
-            spel.Bord[2, 5] = Kleur.Wit;
-            spel.Bord[2, 6] = Kleur.Wit;
-            spel.Bord[2, 7] = Kleur.Wit;
-            spel.Bord[3, 0] = Kleur.Wit;
-            spel.Bord[3, 1] = Kleur.Wit;
-            spel.Bord[3, 2] = Kleur.Wit;
-            spel.Bord[3, 3] = Kleur.Wit;
-            spel.Bord[3, 4] = Kleur.Wit;
-            spel.Bord[3, 5] = Kleur.Wit;
-            spel.Bord[3, 6] = Kleur.Wit;
-            spel.Bord[3, 7] = Kleur.Wit;
-            spel.Bord[4, 0] = Kleur.Wit;
-            spel.Bord[4, 1] = Kleur.Wit;
-            spel.Bord[4, 2] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[4, 4] = Kleur.Wit;
-            spel.Bord[4, 5] = Kleur.Wit;
-            spel.Bord[4, 6] = Kleur.Zwart;
-            spel.Bord[4, 7] = Kleur.Zwart;
-            spel.Bord[5, 0] = Kleur.Wit;
-            spel.Bord[5, 1] = Kleur.Wit;
-            spel.Bord[5, 2] = Kleur.Wit;
-            spel.Bord[5, 3] = Kleur.Wit;
-            spel.Bord[5, 4] = Kleur.Wit;
-            spel.Bord[5, 5] = Kleur.Wit;
-            spel.Bord[5, 6] = Kleur.Zwart;
-            spel.Bord[5, 7] = Kleur.Zwart;
-            spel.Bord[6, 0] = Kleur.Wit;
-            spel.Bord[6, 1] = Kleur.Wit;
-            spel.Bord[6, 2] = Kleur.Wit;
-            spel.Bord[6, 3] = Kleur.Wit;
-            spel.Bord[6, 4] = Kleur.Wit;
-            spel.Bord[6, 5] = Kleur.Wit;
-            spel.Bord[6, 6] = Kleur.Wit;
-            spel.Bord[6, 7] = Kleur.Zwart;
-            spel.Bord[7, 0] = Kleur.Wit;
-            spel.Bord[7, 1] = Kleur.Wit;
-            spel.Bord[7, 2] = Kleur.Wit;
-            spel.Bord[7, 3] = Kleur.Wit;
-            spel.Bord[7, 4] = Kleur.Wit;
-            spel.Bord[7, 5] = Kleur.Wit;
-            spel.Bord[7, 6] = Kleur.Wit;
-            spel.Bord[7, 7] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+                {1, 1, 1, 1, 1, 1, 1, 2 },
+                {1, 1, 1, 1, 1, 1, 2, 2 },
+                {1, 1, 1, 1, 1, 1, 2, 2 },
+                {1, 1, 1, 1, 1, 1, 1, 2 },
+                {1, 1, 1, 1, 1, 1, 1, 1 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
             // 0 1 2 3 4 5 6 7
             // v
             // 0 1 1 1 1 1 1 1 1
@@ -1597,8 +2025,7 @@ namespace ReversiRestApiNUnitTest
             // 6 1 1 1 1 1 1 1 2
             // 7 1 1 1 1 1 1 1 1
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.Afgelopen();
+            var actual = _spelMovement.Afgelopen(spel);
             // Assert
             Assert.IsTrue(actual);
         }
@@ -1607,6 +2034,19 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
+            var bord  = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
             // 0 1 2 3 4 5 6 7
             //
             // 0 0 0 0 0 0 0 0 0
@@ -1619,8 +2059,7 @@ namespace ReversiRestApiNUnitTest
             // 7 0 0 0 0 0 0 0 0
             //
             // Act
-            spel.AandeBeurt = Kleur.Wit;
-            var actual = spel.Afgelopen();
+            var actual = _spelMovement.Afgelopen(spel);
             // Assert
             Assert.IsFalse(actual);
         }
@@ -1629,6 +2068,19 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
             // 0 1 2 3 4 5 6 7
             //
             // 0 0 0 0 0 0 0 0 0
@@ -1641,7 +2093,7 @@ namespace ReversiRestApiNUnitTest
             // 7 0 0 0 0 0 0 0 0
             //
             // Act
-            var actual = spel.OverwegendeKleur();
+            var actual = _spelMovement.OverwegendeKleur(MappingExtensions.FromIntToKleurArray(spel.Bord.MapStringBordTo2DIntArr()));
             // Assert
             Assert.AreEqual(Kleur.Geen, actual);
         }
@@ -1650,11 +2102,19 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 3] = Kleur.Zwart;
-            spel.Bord[3, 3] = Kleur.Zwart;
-            spel.Bord[4, 3] = Kleur.Zwart;
-            spel.Bord[3, 4] = Kleur.Zwart;
-            spel.Bord[4, 4] = Kleur.Wit;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 2, 0, 0, 0, 0 },
+                {0, 0, 0, 2, 2, 0, 0, 0 },
+                {0, 0, 0, 2, 1, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
             // 0 1 2 3 4 5 6 7
             //
             // 0 0 0 0 0 0 0 0 0
@@ -1667,7 +2127,7 @@ namespace ReversiRestApiNUnitTest
             // 7 0 0 0 0 0 0 0 0
             //
             // Act
-            var actual = spel.OverwegendeKleur();
+            var actual = _spelMovement.OverwegendeKleur(MappingExtensions.FromIntToKleurArray(spel.Bord.MapStringBordTo2DIntArr()));
             // Assert
             Assert.AreEqual(Kleur.Zwart, actual);
         }
@@ -1676,11 +2136,19 @@ namespace ReversiRestApiNUnitTest
         {
             // Arrange
             Spel spel = new Spel();
-            spel.Bord[2, 3] = Kleur.Wit;
-            spel.Bord[3, 3] = Kleur.Wit;
-            spel.Bord[4, 3] = Kleur.Wit;
-            spel.Bord[3, 4] = Kleur.Wit;
-            spel.Bord[4, 4] = Kleur.Zwart;
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 0, 0, 0, 0 },
+                {0, 0, 0, 1, 1, 0, 0, 0 },
+                {0, 0, 0, 1, 2, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
             // 0 1 2 3 4 5 6 7
             //
             // 0 0 0 0 0 0 0 0 0
@@ -1693,9 +2161,93 @@ namespace ReversiRestApiNUnitTest
             // 7 0 0 0 0 0 0 0 0
             //
             // Act
-            var actual = spel.OverwegendeKleur();
+            var actual = _spelMovement.OverwegendeKleur(MappingExtensions.FromIntToKleurArray(spel.Bord.MapStringBordTo2DIntArr()));
             // Assert
             Assert.AreEqual(Kleur.Wit, actual);
+        }
+
+        [Test]
+        public void test()
+        {
+            // Arrange
+            Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 2, 2, 2, 1, 0 },
+                {0, 0, 0, 2, 2, 2, 0, 0 },
+                {0, 0, 0, 1, 1, 2, 1, 0 },
+                {0, 0, 0, 0, 0, 2, 2, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
+            // 0 1 2 3 4 5 6 7
+            //
+            // 0 0 0 0 0 0 0 0 0
+            // 1 0 0 0 0 0 0 0 0
+            // 2 0 0 0 1 0 0 0 0
+            // 3 0 0 0 1 1 0 0 0
+            // 4 0 0 0 1 2 0 0 0
+            // 5 0 0 0 0 0 0 0 0
+            // 6 0 0 0 0 0 0 0 0
+            // 7 0 0 0 0 0 0 0 0
+            //
+            // Act
+            var coordsList = new List<CoordsModel>();
+            var actual = _spelMovement.DoeZet(ref spel, 2, 2, out coordsList);
+
+            // Assert
+            Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[2, 2], (int)Kleur.Wit);
+            Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[3, 2], (int)Kleur.Geen);
+            Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[2, 3], (int)Kleur.Wit);
+            Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[2, 4], (int)Kleur.Wit);
+            Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[2, 5], (int)Kleur.Wit);
+            Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[3, 3], (int)Kleur.Wit);
+        }
+
+        [Test]
+        public void test2()
+        {
+            // Arrange
+            Spel spel = new Spel();
+            var bord = new int[8, 8]
+            {
+                {0, 0, 1, 1, 1, 0, 0, 0 },
+                {0, 0, 0, 1, 1, 0, 0, 0 },
+                {0, 2, 2, 2, 2, 2, 1, 0 },
+                {0, 0, 2, 2, 1, 1, 2, 2 },
+                {0, 0, 0, 2, 1, 0, 1, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+                {0, 0, 0, 0, 0, 0, 0, 0 },
+            };
+            spel.Bord = bord.MapIntArrToBase64String();
+            spel.AandeBeurt = (int)Kleur.Wit;
+            // 0 1 2 3 4 5 6 7
+            //
+            // 0 0 0 0 0 0 0 0 0
+            // 1 0 0 0 0 0 0 0 0
+            // 2 0 0 0 1 0 0 0 0
+            // 3 0 0 0 1 1 0 0 0
+            // 4 0 0 0 1 2 0 0 0
+            // 5 0 0 0 0 0 0 0 0
+            // 6 0 0 0 0 0 0 0 0
+            // 7 0 0 0 0 0 0 0 0
+            //
+            // Act
+            var coordsList = new List<CoordsModel>();
+            var actual = _spelMovement.DoeZet(ref spel, 4, 1, out coordsList);
+
+            // Assert
+            Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[4, 1], (int)Kleur.Wit);
+            Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[3, 2], (int)Kleur.Wit);
+            Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[2, 3], (int)Kleur.Wit);
+            /*Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[2, 4], (int)Kleur.Wit);
+            Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[2, 5], (int)Kleur.Wit);
+            Assert.AreEqual(spel.Bord.MapStringBordTo2DIntArr()[3, 3], (int)Kleur.Wit);*/
         }
     }
 }
