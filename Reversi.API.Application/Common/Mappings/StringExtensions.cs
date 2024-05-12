@@ -13,7 +13,7 @@ namespace Reversi.API.Application.Common.Mappings
         /// <param name="maxLength">The maximum limit of the string to return.</param>
         public static string LimitLength(this string source, int maxLength)
         {
-            if (source.Length <= maxLength)
+            if (source.Length <= maxLength || maxLength < 0)
             {
                 return source;
             }

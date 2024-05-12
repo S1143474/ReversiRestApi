@@ -24,8 +24,4 @@
     <ProjectReference Include="..\Reversi.API.Application\Reversi.API.Application.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Common\" />
-  </ItemGroup>
-
 </Project>

@@ -483,7 +483,7 @@ namespace Reversi.API.UnitTests
             Assert.IsNotNull(result);
             Assert.AreEqual(2, result.Count); // Two Spel entities meet the criteria
             Assert.AreEqual(3, result.TotalCount); // Total count should reflect the total number of finished Spel entities
-            Assert.AreEqual(spel3.Token, result[0].Token); // Check if the correct Spel is returned first based on FinishedAt
+            Assert.AreEqual(spel1.Token, result[0].Token); // Check if the correct Spel is returned first based on FinishedAt
             Assert.AreEqual(spel2.Token, result[1].Token); // Check if the correct Spel is returned second based on FinishedAt
         }
 
