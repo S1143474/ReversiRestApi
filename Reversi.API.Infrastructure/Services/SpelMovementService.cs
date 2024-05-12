@@ -46,7 +46,7 @@ namespace Reversi.API.Infrastructure.Services
 
             if (!ZetMogelijk(ref spel, rijZet, kolomZet))
                 return false;
-            FlipStonesBetween(ref spel, _ficheList);
+            spel.Bord = FlipStonesBetween(ref spel, _ficheList).MapIntArrToBase64String();
 
             bord[rijZet, kolomZet] = spel.AandeBeurt;
             spel.Bord = bord.MapIntArrToBase64String();
@@ -63,6 +63,9 @@ namespace Reversi.API.Infrastructure.Services
         {
             var bord = spel.Bord.MapStringBordTo2DIntArr();
             int possibilitiesCount = 0;
+
+            if (!CheckOutOfBounds(rijZet) || !CheckOutOfBounds(kolomZet))
+                return false;
 
             if (bord[rijZet, kolomZet] != (int)Kleur.Geen)
                 return false;
@@ -283,7 +286,7 @@ namespace Reversi.API.Infrastructure.Services
         }
 
 
-        public void FlipStonesBetween(ref Spel spel, HashSet<CoordsModel> ficheList)
+        public int[,] FlipStonesBetween(ref Spel spel, HashSet<CoordsModel> ficheList)
         {
             var bord = spel.Bord.MapStringBordTo2DIntArr();
 
@@ -292,7 +295,8 @@ namespace Reversi.API.Infrastructure.Services
                 bord[fiche.Y, fiche.X] = spel.AandeBeurt;
             }
 
-            spel.Bord = bord.MapIntArrToBase64String();
+            return bord;
+            // spel.Bord = bord.MapIntArrToBase64String();
         }
         /*public List<CoordsModel> FlipStonesBetween(ref Spel spel, int startY, int startX)
         {

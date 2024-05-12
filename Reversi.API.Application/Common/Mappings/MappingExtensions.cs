@@ -19,40 +19,6 @@ namespace Reversi.API.Application.Common.Mappings
             return base64Bord;
         }
 
-       /* public static Spel MapToEntity(this DBSpel dbSpel)
-        {
-            return new Spel
-            {
-                Id = dbSpel.GUID,
-                Omschrijving = dbSpel.Description,
-                Token = dbSpel.Token,
-                Speler1Token = dbSpel.Speler1Token,
-                Speler2Token = dbSpel.Speler2Token,
-                Bord = FromIntToKleurArray(dbSpel.Bord.MapStringBordTo2DIntArr()),
-                AandeBeurt = (Kleur)dbSpel.Beurt,
-                CreatedAt = dbSpel.CreatedAt,
-                StartedAt = dbSpel.StartedAt,
-                FinishedAt = dbSpel.EndedAt,
-            };
-        }
-
-        public static SpelDTO MapToDto(this DBSpel dbSpel)
-        {
-            return new SpelDTO()
-            {
-                Id = dbSpel.GUID,
-                Omschrijving = dbSpel.Description,
-                Token = dbSpel.Token,
-                Speler1Token = dbSpel.Speler1Token,
-                Speler2Token = dbSpel.Speler2Token,
-                Bord = dbSpel.Bord.MapStringBordTo2DIntList(),
-                AandeBeurt = dbSpel.Beurt,
-                CreatedAt = dbSpel.CreatedAt,
-                StartedAt = dbSpel.StartedAt,
-                EndedAt = dbSpel.EndedAt
-            };
-        }*/
-
 
         /// <summary>
         /// Converts a int[,] bord to a ISpel.Kleur[,] bord
@@ -77,6 +43,9 @@ namespace Reversi.API.Application.Common.Mappings
         /// <returns></returns>
         public static int[,] FromKleurToIntArray(Kleur[,] prevBord)
         {
+            if (prevBord is null)
+                return null;
+
             int[,] result = new int[prevBord.GetLength(0), prevBord.GetLength(1)];
 
             for (int i = 0; i < prevBord.GetLength(0); i++)
